@@ -4,12 +4,16 @@ package todo.app.logic;
  * Represents a task in the To-Do List Application.
  * 
  * It represents an individual task that a user needs to complete.
+ * 
+ * @author Marcel Pulido
+ * @version 1.0
  */
 
 public class Task extends Entity {
 	
 	private String title;
 	private String description;
+	private Long userId;
 	
 	/**
      * Parameterized constructor for creating a Task with initial values.
@@ -53,6 +57,14 @@ public class Task extends Entity {
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public Long getUserId() {
+		return userId;
 	}
 	
 }
