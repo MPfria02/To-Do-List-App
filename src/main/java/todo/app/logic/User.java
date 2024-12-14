@@ -5,6 +5,9 @@ package todo.app.logic;
  * 
  * It holds information related to the user such as personal details, 
  * account credentials.
+ * 
+ * @author Marcel Pulido
+ * @version 1.0
  */
 public class User extends Entity {
 	
@@ -24,6 +27,20 @@ public class User extends Entity {
 		this.name = name;
 		this.email = email;
 		this.password = password;
+	}
+	
+	/**
+	 * 	Returns the name of the user account
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * 	Returns the email of the user account
+	 */
+	public String getEmail() {
+		return email;
 	}
 
 	/**
