@@ -58,7 +58,7 @@ public class JdbcUserRepository implements UserRepository {
 			throw new IllegalArgumentException("User attributes cannot be either null or empty.");
 		}
 		
-		sqlStatement = "INSERT INTO t_users (name, email, password) VALUES (?,?,?)";
+		sqlStatement = "INSERT INTO t_users (full_name, email, password) VALUES (?,?,?)";
 		jdbcTemplate.update(sqlStatement, user.getName(), user.getEmail(), user.getPassword());		
 	}
 	
@@ -68,7 +68,7 @@ public class JdbcUserRepository implements UserRepository {
 		validateUserEmailAndPassword(email, password);
 		sqlStatement = "SELECT * FROM t_users WHERE email = ? AND password = ?";
 		return jdbcTemplate.queryForObject(sqlStatement, 
-				(rs, rowNum) -> new User(rs.getString("name"), 
+				(rs, rowNum) -> new User(rs.getString("full_name"), 
 							             rs.getString("email"), 
 							             rs.getString("password")),
 				email, password);
@@ -80,7 +80,7 @@ public class JdbcUserRepository implements UserRepository {
 		validateUserId(id);
 		sqlStatement = "SELECT * FROM t_users WHERE id = ?";
 		return jdbcTemplate.queryForObject(sqlStatement, 
-				(rs, rowNum) -> new User(rs.getString("name"), 
+				(rs, rowNum) -> new User(rs.getString("full_name"), 
         				 				 rs.getString("email"), 
         				 				 rs.getString("password")),
 				id);
@@ -100,7 +100,7 @@ public class JdbcUserRepository implements UserRepository {
 		
 		sqlStatement = "SELECT * FROM t_users";
 		return jdbcTemplate.query(sqlStatement, 
-				(rs, rowNum) -> new User(rs.getString("name"), 
+				(rs, rowNum) -> new User(rs.getString("full_name"), 
         				 				 rs.getString("email"), 
         				 				 rs.getString("password")));
 	}

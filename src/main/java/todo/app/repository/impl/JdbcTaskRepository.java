@@ -94,7 +94,7 @@ public class JdbcTaskRepository implements TaskRepository {
         Task task = findTaskById(task_id, user_id);
 
         // Deletes task from database
-        sqlStatement = "DELETE FROM t_tasks WHERE id = ? AND userId = ?";
+        sqlStatement = "DELETE FROM t_tasks WHERE id = ? AND user_id = ?";
         jdbcTemplate.update(sqlStatement, task_id, user_id);
 
         return task;
@@ -105,7 +105,7 @@ public class JdbcTaskRepository implements TaskRepository {
         // Retrieves all tasks for a specific user
         sqlStatement = " SELECT * FROM t_tasks"
             + " JOIN t_users"
-            + " ON t_tasks.userId = ?";
+            + " ON t_tasks.user_id = ?";
 
         return jdbcTemplate.query(sqlStatement,
             (rs, rowNumber) -> new Task(rs.getString("title"),
@@ -156,7 +156,7 @@ public class JdbcTaskRepository implements TaskRepository {
         sqlStatement = " SELECT COUNT(id)"
             + " FROM t_tasks"
             + " JOIN t_users"
-            + " ON t_tasks.userId = ?";
+            + " ON t_tasks.user_id = ?";
 
         int total_IDs = jdbcTemplate.queryForObject(sqlStatement, Integer.class, user_id);
 
