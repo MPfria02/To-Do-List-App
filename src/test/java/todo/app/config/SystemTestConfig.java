@@ -14,8 +14,8 @@ public class SystemTestConfig {
 	@Bean
 	public DataSource dataSource() {
 		return new EmbeddedDatabaseBuilder()
-				.addScript("classpath:todo/tesdb/schema.sql")
-				.addScript("classpath:todo/tesdb/data.sql")
+				.addScript("classpath:todo/testdb/schema.sql")
+				.addScript("classpath:todo/testdb/data.sql")
 				.build();
 	}
 }
