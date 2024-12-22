@@ -37,7 +37,10 @@ public class JdbcTaskRepository implements TaskRepository {
      * @param dataSource The data source for database connections.
      */
     public JdbcTaskRepository(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    	
+    	if (dataSource == null) throw new IllegalArgumentException("DataSource value is null");
+        
+    	this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @Override
@@ -45,25 +48,24 @@ public class JdbcTaskRepository implements TaskRepository {
         // Validates task before insertion
         validateTaskAttributes(task);
 
+        Long nextTaskId = getNextTaskIdForUser(task.getUserId());
+         
         // Inserts task into database
-        sqlStatement = "INSERT INTO t_tasks (title, description, user_id) values (?,?,?)";
-        jdbcTemplate.update(sqlStatement, task.getTitle(), 
-        								  task.getDescription(), 
-        								  task.getUserId());
+        sqlStatement = "INSERT INTO t_tasks (id, title, description, user_id) values (?,?,?,?)";
+        jdbcTemplate.update(sqlStatement,nextTaskId, task.getTitle(), task.getDescription(), task.getUserId());
     }
 
-   
-    @Override
+	@Override
     public Task findTaskById(Long task_id, Long user_id) {
         // Validates task ID before querying
     	validateTaskId(task_id, user_id);
 
         // Retrieves task from database
-        sqlStatement = "SELECT * FROM t_tasks WHERE id = ?";
+        sqlStatement = "SELECT * FROM t_tasks WHERE id = ? and user_id = ?";
         return jdbcTemplate.queryForObject(sqlStatement,
             (rs, rowNumber) -> new Task(rs.getString("title"), 
             							rs.getString("description")),
-            task_id);
+            task_id, user_id);
     }
 
     @Override
@@ -87,9 +89,6 @@ public class JdbcTaskRepository implements TaskRepository {
 
     @Override
     public Task deleteTaskById(Long task_id, Long user_id) {
-    	// Validates task ID before querying
-        validateTaskId(task_id, user_id);
-
         // Retrieves task before deletion
         Task task = findTaskById(task_id, user_id);
 
@@ -105,11 +104,11 @@ public class JdbcTaskRepository implements TaskRepository {
         // Retrieves all tasks for a specific user
         sqlStatement = " SELECT * FROM t_tasks"
             + " JOIN t_users"
-            + " ON t_tasks.user_id = ?";
+            + " ON t_tasks.user_id = t_users.id WHERE t_users.id = ?";
 
         return jdbcTemplate.query(sqlStatement,
             (rs, rowNumber) -> new Task(rs.getString("title"),
-            							rs.getString("description")));
+            							rs.getString("description")), user_id);
     }
     
     /**
@@ -156,7 +155,7 @@ public class JdbcTaskRepository implements TaskRepository {
         sqlStatement = " SELECT COUNT(id)"
             + " FROM t_tasks"
             + " JOIN t_users"
-            + " ON t_tasks.user_id = ?";
+            + " ON t_tasks.user_id = t_users.id WHERE t_users.id = ?";
 
         int total_IDs = jdbcTemplate.queryForObject(sqlStatement, Integer.class, user_id);
 
@@ -185,7 +184,7 @@ public class JdbcTaskRepository implements TaskRepository {
      * 		   {@code false} otherwise.
      */
     private boolean hasValidTitle(String title) {
-    	return (!title.isEmpty() && title != null);
+    	return (title != null && !title.isEmpty());
     }
     
     /**
@@ -196,6 +195,14 @@ public class JdbcTaskRepository implements TaskRepository {
      * 		   {@code false} otherwise.
      */
     private boolean hasValidDescription(String description) {
-    	return (!description.isEmpty() && description != null);
+    	return (description != null  && !description.isEmpty());
     }
+    
+   private Long getNextTaskIdForUser(Long user_id) {
+		
+    	sqlStatement = "SELECT COUNT(id) FROM t_tasks WHERE user_id = ?";
+		Long max_task_id = jdbcTemplate.queryForObject(sqlStatement, Long.class, user_id); 
+		
+		return max_task_id + 1;
+	}
 }
