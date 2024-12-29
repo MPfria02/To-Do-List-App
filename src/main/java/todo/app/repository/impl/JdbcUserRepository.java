@@ -202,9 +202,9 @@ public class JdbcUserRepository implements UserRepository {
      * @return true if the ID is valid, false otherwise
      */
     private boolean isValidUserId(Long id) {
-        sqlStatement = "SELECT COUNT(id) FROM t_users";
-        int totalUsers = jdbcTemplate.queryForObject(sqlStatement, Integer.class);
-
-        return id > 0 && id <= totalUsers;
+    	 sqlStatement = "SELECT COUNT(id) FROM t_users WHERE t_users.id = ?";
+        int userIdExists = jdbcTemplate.queryForObject(sqlStatement, Integer.class, id);
+         
+        return userIdExists != 0;
     }
 }
