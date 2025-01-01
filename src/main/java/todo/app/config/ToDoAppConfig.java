@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import todo.app.repository.TaskRepository;
+import todo.app.repository.UserRepository;
 import todo.app.repository.impl.JdbcTaskRepository;
 import todo.app.repository.impl.JdbcUserRepository;
 
@@ -22,12 +24,12 @@ public class ToDoAppConfig {
 	}
     
     @Bean
-    public JdbcTaskRepository jdbcTaskRepository() {
+    public TaskRepository jdbcTaskRepository() {
     	return new JdbcTaskRepository(dataSource);
     }
     
     @Bean
-    public JdbcUserRepository jdbcUserRepository() {
+    public UserRepository jdbcUserRepository() {
     	return new JdbcUserRepository(dataSource);
     }   
 }
