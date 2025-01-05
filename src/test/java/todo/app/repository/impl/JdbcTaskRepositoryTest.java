@@ -17,8 +17,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import todo.app.logic.Task;
 
 /**
- * Test suite for the JdbcTaskRepository class that verifies CRUD operations and validation logic
- * for task management in the database. Uses an embedded test database for isolation and reproducibility.
+ * Test suite for the JdbcTaskRepository class that verifies CRUD operations. Uses an embedded test database for isolation and reproducibility.
  * 
  * @see JdbcTaskRepository
  * @see Task
@@ -48,12 +47,6 @@ class JdbcTaskRepositoryTest {
     
     /** SQL query to count total tasks for a specific user */
     private static final String COUNT_TOTAL_TASKS_FOR_USER_SQL = "SELECT COUNT(id) FROM t_tasks WHERE user_id = ?";
-    
-    /** Error message for invalid task attributes */
-    private static final String INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE = "Invalid task attributes. Title and description cannot be empty or null.";
-    
-    /** Error message for invalid task ID */
-    private static final String INVALID_TASK_ID_EXCEPTION_MESSAGE = "Invalid task ID.";
     
     /**
      * Sets up the test environment before each test case.
@@ -116,32 +109,6 @@ class JdbcTaskRepositoryTest {
     }
     
     /**
-     * Verifies that task creation fails when task attributes are empty.
-     */
-    @Test
-    void shouldThrowExceptionWhenTaskAttributesAreEmpty() {
-        task = new Task("", "Eggs, milk");
-        task.setUserId(3L);
-        
-        assertThrows(IllegalArgumentException.class, () -> {
-            jdbcTaskRepository.createTask(task);
-        }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
-    }
-    
-    /**
-     * Verifies that task creation fails when task attributes are null.
-     */
-    @Test
-    void shouldThrowExceptionWhenTaskAttributesAreNull() {
-        task = new Task("Buy Groceries", null);
-        task.setUserId(3L);
-        
-        assertThrows(IllegalArgumentException.class, () -> {
-            jdbcTaskRepository.createTask(task);
-        }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
-    }
-
-    /**
      * Tests successful task retrieval with valid task and user IDs.
      * Verifies the retrieved task's attributes match expected values.
      */
@@ -149,9 +116,10 @@ class JdbcTaskRepositoryTest {
     void shouldReturnTaskWhenTaskIdIsValid() {
         task_id = 2L;
         user_id = 1L;
-        task = jdbcTaskRepository.findTaskById(task_id, user_id);
         String titleExpected = "Book tickets";
         String descriptionExpected = "Vacation tickets to Hawaii";
+        
+        task = jdbcTaskRepository.findTaskById(task_id, user_id);
         
         assertNotNull(task);
         assertAll("Verify task attributes",
@@ -160,19 +128,6 @@ class JdbcTaskRepositoryTest {
         );
     }
     
-    /**
-     * Verifies that task retrieval fails with an invalid task ID.
-     */
-    @Test
-    void shouldThrowExceptionWhenTaskIdIsInvalid() {
-        task_id = 50L;
-        user_id = 1L;
-        
-        assertThrows(IllegalArgumentException.class, () -> {
-            jdbcTaskRepository.findTaskById(task_id, user_id);
-        }, INVALID_TASK_ID_EXCEPTION_MESSAGE);    
-    }
-
     /**
      * Tests successful task update with valid attributes.
      * Verifies the updated task's attributes in the database.
@@ -216,16 +171,29 @@ class JdbcTaskRepositoryTest {
      * Verifies the total number of tasks matches the expected count.
      */
     @Test
-    void testGetAllTasks() {
+    void shouldGetAllTasks() {
         user_id = 1L;
         int totalTasks = jdbcTemplate.queryForObject(COUNT_TOTAL_TASKS_FOR_USER_SQL, 
             Integer.class, user_id);
         
-        List<Task> tasks = jdbcTaskRepository.getAllTasks(user_id);
+        List<Task> tasks = jdbcTaskRepository.getAll(user_id);
         
         assertNotNull(tasks);
         assertThat(tasks.size()).isEqualTo(totalTasks);
     }
+    
+    @Test
+    void shouldReturnTrueWhenTaskIdIsValid() {
+    	user_id = 1L; task_id = 1L;
+    	assertTrue(jdbcTaskRepository.existById(task_id, user_id));
+    }
+    
+    @Test
+    void shouldReturnFalseWhenTaskIdNotExist() {
+    	user_id = 1L; task_id = 7L;
+    	assertFalse(jdbcTaskRepository.existById(task_id, user_id));
+    }
+    
     
     /**
      * Creates and configures an embedded test database with predefined schema and test data.

@@ -73,44 +73,6 @@ class JdbcUserRepositoryTest {
     }
 
     /**
-     * Verifies that empty user attributes are properly validated during user creation.
-     * Tests input validation for empty strings in critical fields.
-     */
-    @Test
-    void shouldThrowExceptionWhenUserAttributesAreEmpty() {
-        // Arrange: Create user with empty email and password
-        EXCEPTION_MESSAGE_EXPECTED = "User attributes cannot be either null or empty.";
-        full_name = "John Doe"; email = ""; password = "";
-        user = new User(full_name, email, password);
-        
-        // Act & Assert: Verify exception is thrown for empty attributes
-        assertThrows(IllegalArgumentException.class, 
-                ()-> { 
-                     jdbcUserRepository.createUser(user);
-                }, 
-                EXCEPTION_MESSAGE_EXPECTED);
-    }
-    
-    /**
-     * Verifies that null user attributes are properly validated during user creation.
-     * Tests input validation for null values in critical fields.
-     */
-    @Test
-    void shouldThrowExceptionWhenUserAttributesAreNull() {
-        // Arrange: Create user with null password
-        EXCEPTION_MESSAGE_EXPECTED = "User attributes cannot be either null or empty.";
-        full_name = "John Doe"; email = "john@example.com"; password = null;
-        user = new User(full_name, email, password);
-        
-        // Act & Assert: Verify exception is thrown for null attributes
-        assertThrows(IllegalArgumentException.class, 
-                ()-> { 
-                     jdbcUserRepository.createUser(user);
-                }, 
-                EXCEPTION_MESSAGE_EXPECTED);
-    }
-
-    /**
      * Verifies successful user creation with valid attributes.
      * Tests the happy path for user creation and subsequent retrieval.
      */
@@ -134,83 +96,7 @@ class JdbcUserRepositoryTest {
                 ()-> assertThat(user.getPassword()).isEqualTo(userExpected.getPassword())
         );    
     }
-    
-    /**
-     * Verifies that empty credentials are properly validated during user authentication.
-     * Tests input validation for empty strings in login credentials.
-     */
-    @Test
-    void shouldThrowExceptionWhenUserEmailOrPasswordIsEmpty() {
-        // Arrange: Set empty credentials
-        EXCEPTION_MESSAGE_EXPECTED = "Email or/and password are incorrect.";
-        full_name = "John Doe"; email = ""; password = "";
-        
-        // Act & Assert: Verify exception is thrown for empty credentials
-        assertThrows(IllegalArgumentException.class, 
-                ()-> { 
-                     jdbcUserRepository.findUserByEmailAndPassword(email, password);
-                }, 
-                EXCEPTION_MESSAGE_EXPECTED);
-    }
-    
-    /**
-     * Verifies that null credentials are properly validated during user authentication.
-     * Tests input validation for null values in login credentials.
-     */
-    @Test
-    void shouldThrowExceptionWhenUserEmailOrPasswordIsNull() {
-        // Arrange: Set null credentials
-        EXCEPTION_MESSAGE_EXPECTED = "Email or/and password are incorrect.";
-        full_name = "John Doe"; email = null; password = null;
-        
-        // Act & Assert: Verify exception is thrown for null credentials
-        assertThrows(IllegalArgumentException.class, 
-                ()-> { 
-                     jdbcUserRepository.findUserByEmailAndPassword(email, password);
-                }, 
-                EXCEPTION_MESSAGE_EXPECTED);
-    }
-    
-    /**
-     * Verifies successful user retrieval using valid email and password.
-     * Tests the authentication process using valid credentials.
-     */
-    @Test
-    void shouldReturnUserWhenEmailAndPasswordAreValid() {
-        // Arrange: Set valid credentials
-        String full_name_expected = "Bob";
-        Long user_id_expected = 2L;
-        email = "bob@example.com"; password = "securepass";
-        
-        // Act: Retrieve user with credentials
-        SQL_QUERY = "SELECT * FROM t_users WHERE t_users.email = ? AND t_users.password = ?";
-        user = jdbcTemplate.queryForObject(SQL_QUERY, (rs, rowNum) -> mapToUser(rs, rowNum), email, password);
-        
-        // Assert: Verify correct user was retrieved
-        assertThat(user.getName()).isEqualTo(full_name_expected);
-        
-        SQL_QUERY = "SELECT id FROM t_users WHERE t_users.email = ? AND t_users.password = ?";
-        user_id = jdbcTemplate.queryForObject(SQL_QUERY, Long.class, email, password);
-        
-        assertThat(user_id).isEqualTo(user_id_expected);
-    }
 
-    /**
-     * Verifies that invalid user IDs are properly handled during user retrieval.
-     * Tests error handling for non-existent user IDs.
-     */
-    @Test
-    void shouldThrowExceptionWhenUserIdIsNotValid() {
-        // Arrange: Set invalid user ID
-        user_id = 5L;
-        EXCEPTION_MESSAGE_EXPECTED = "Invalid user ID.";
-        
-        // Act & Assert: Verify exception is thrown for invalid ID
-        assertThrows(IllegalArgumentException.class, ()->{
-            user = jdbcUserRepository.findUserById(user_id);
-            }, 
-            EXCEPTION_MESSAGE_EXPECTED);
-    }
 
     /**
      * Verifies successful user retrieval using a valid user ID.
@@ -269,15 +155,27 @@ class JdbcUserRepositoryTest {
      * Tests the retrieval of multiple records and verifies the count matches the database.
      */
     @Test
-    void testGetAllUsers() {
+    void shouldGetAllUsers() {
         // Get total count of users in database
         SQL_QUERY = "SELECT COUNT(id) FROM t_users";
         int totalUsersInDatabase = jdbcTemplate.queryForObject(SQL_QUERY, Integer.class);
         
         // Retrieve all users and verify count matches
-        List<User> users = jdbcUserRepository.getAllUsers();
+        List<User> users = jdbcUserRepository.getAll();
         
         assertThat(users.size()).isEqualTo(totalUsersInDatabase);
+    }
+    
+    @Test
+    void shouldReturnTrueWhenUserIdExist() {
+    	user_id = 1L;
+    	assertTrue(jdbcUserRepository.existById(user_id));
+    }
+    
+    @Test
+    void shouldReturnFalseWhenUserIdNotExist() {
+    	user_id = 6L;
+    	assertFalse(jdbcUserRepository.existById(user_id));
     }
     
     /**
