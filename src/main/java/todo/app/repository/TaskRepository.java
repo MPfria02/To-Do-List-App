@@ -55,6 +55,15 @@ public interface TaskRepository {
      * @return A list of all tasks entities.
      * @throws DatabaseException if there's an error retrieving tasks.
      */
-    List<Task> getAllTasks(Long user_id);
+    List<Task> getAll(Long user_id);
+    
+    /**
+     * Validates a task ID against existing tasks for a user.
+     * 
+     * @param task_id The task ID to validate
+     * @param user_id The user ID to check against
+     * @return boolean indicating if the task ID is valid
+     */
+    boolean existById(Long task_id, Long user_id);
     
 }
