@@ -53,8 +53,8 @@ public class JdbcUserRepository implements UserRepository {
 	
 	@Override
 	public void createUser(User user) {	
-		sqlStatement = "INSERT INTO t_users (full_name, email, password) VALUES (?,?,?)";
-		jdbcTemplate.update(sqlStatement, user.getName(), user.getEmail(), user.getPassword());		
+		sqlStatement = "INSERT INTO t_users (username, email, password) VALUES (?,?,?)";
+		jdbcTemplate.update(sqlStatement, user.getUsername(), user.getEmail(), user.getPassword());		
 	}
 	
 	@Override
@@ -63,6 +63,19 @@ public class JdbcUserRepository implements UserRepository {
 		return jdbcTemplate.queryForObject(sqlStatement, 
 				(rs, rowNum) -> mapToUser(rs, rowNum),
 				id);
+	}
+	
+	@Override
+	public User findUserByUsername(String username) {
+		sqlStatement = "SELECT * FROM t_users WHERE t_users.username = ?";
+		return jdbcTemplate.queryForObject(sqlStatement, (rs, rowNum) -> mapToUser(rs, rowNum),
+				username);
+	}
+	
+	@Override
+	public Long findUserIdByUsername(String name) {
+		sqlStatement = "SELECT id FROM t_users WHERE t_users.username = ?";
+		return jdbcTemplate.queryForObject(sqlStatement, Long.class, name);
 	}
 	
 	@Override
@@ -97,6 +110,6 @@ public class JdbcUserRepository implements UserRepository {
      * @throws SQLException if database access error occurs
      */
     private User mapToUser(ResultSet rs, int rowNumber) throws SQLException {
-        return new User(rs.getString("full_name"), rs.getString("email"), rs.getString("password"));
+        return new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
     }
 }

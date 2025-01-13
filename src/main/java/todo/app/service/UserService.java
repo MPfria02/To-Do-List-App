@@ -31,6 +31,15 @@ public interface UserService {
     User getUserById(Long id);
     
     /**
+     * Finds a user id by their username
+     * 
+     * @param username The username of the user.
+     * @return The User ID if username is valid
+     * @throws IllegalArgumentException if not user is found with the given username
+     */
+    Long getUserIdByUsername(String username);
+    
+    /**
      * Removes a user from the system by their ID.     *
      * @param id the unique identifier of the user to delete, must not be null
      * @return the deleted user entity

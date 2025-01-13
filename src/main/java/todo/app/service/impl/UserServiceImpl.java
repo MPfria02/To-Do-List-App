@@ -30,6 +30,14 @@ public class UserServiceImpl implements UserService {
 		}
 		return userRepository.findUserById(id);
 	}
+	
+	@Override
+	public Long getUserIdByUsername(String username) {
+		if (!hasValidUsername(username)) {
+			throw new IllegalArgumentException("Invalid username");
+		}
+		return userRepository.findUserIdByUsername(username);
+	}
 
 	@Override
 	public User deleteUserById(Long id) {
@@ -57,14 +65,15 @@ public class UserServiceImpl implements UserService {
      * 		   {@code false} otherwise
      */
     private boolean isValidUser(User user) {
-        boolean isValidName = hasValidName(user.getName());
-        boolean isValidUserEmailAndPassword = validateUserEmailAndPassword(
-            user.getEmail(), 
+        boolean isValidEmail = hasValidEmail(user.getEmail());
+        boolean isValidUserNameAndPassword = validateUserNameAndPassword(
+            user.getUsername(), 
             user.getPassword()
         );
 
-        return (isValidName && isValidUserEmailAndPassword);
+        return (isValidEmail && isValidUserNameAndPassword);
     }
+    
     /**
      * Validates email and password combination.
      * 
@@ -73,16 +82,12 @@ public class UserServiceImpl implements UserService {
      * @param email The email to validate
      * @param password The password to validate
      * @return true if both email and password are valid
-     * @throws IllegalArgumentException if either email or password is invalid
      */
-    private boolean validateUserEmailAndPassword(String email, String password) {
-        boolean isValidEmail = hasValidEmail(email);
+    private boolean validateUserNameAndPassword(String username, String password) {
+        boolean isValidName = hasValidUsername(username);
         boolean isValidPassword = hasValidPassword(password);
 
-        if (!isValidEmail || !isValidPassword) {
-            throw new IllegalArgumentException("Email or/and password are incorrect.");
-        }
-        return true;
+        return isValidName && isValidPassword;
     }
 
     /**
@@ -91,8 +96,8 @@ public class UserServiceImpl implements UserService {
      * @param name The name to validate
      * @return true if the name is valid, false otherwise
      */
-    private boolean hasValidName(String name) {
-        return (name != null && !name.isEmpty());
+    private boolean hasValidUsername(String username) {
+        return (username != null && !username.isEmpty());
     }
 
     /**
@@ -114,5 +119,4 @@ public class UserServiceImpl implements UserService {
     private boolean hasValidEmail(String email) {
         return (email != null && !email.isEmpty());
     }
-
 }

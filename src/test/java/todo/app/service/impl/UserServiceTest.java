@@ -35,7 +35,7 @@ class UserServiceTest {
 	private UserService userService;
     
 	// Common test data and SQL queries
-    private String full_name, email, password;
+    private String username, email, password;
     private String EXCEPTION_MESSAGE_EXPECTED;
     
 	/**
@@ -46,8 +46,8 @@ class UserServiceTest {
     void shouldThrowExceptionWhenUserAttributesAreEmpty() {
         // Arrange: Create user with empty email and password
         EXCEPTION_MESSAGE_EXPECTED = "User attributes cannot be either null or empty.";
-        full_name = "John Doe"; email = ""; password = "";
-        user = new User(full_name, email, password);
+        username = "John Doe"; email = ""; password = "";
+        user = new User(username, email, password);
         
         // Act & Assert: Verify exception is thrown for empty attributes
         assertThrows(IllegalArgumentException.class, 
@@ -65,8 +65,8 @@ class UserServiceTest {
     void shouldThrowExceptionWhenUserAttributesAreNull() {
         // Arrange: Create user with null password
         EXCEPTION_MESSAGE_EXPECTED = "User attributes cannot be either null or empty.";
-        full_name = "John Doe"; email = "john@example.com"; password = null;
-        user = new User(full_name, email, password);
+        username = "John Doe"; email = "john@example.com"; password = null;
+        user = new User(username, email, password);
         
         // Act & Assert: Verify exception is thrown for null attributes
         assertThrows(IllegalArgumentException.class, 
@@ -96,5 +96,16 @@ class UserServiceTest {
             user = userService.deleteUserById(user_id);
             }, 
             EXCEPTION_MESSAGE_EXPECTED);
+    }
+    
+    @Test
+    void shouldThrowExceptionWhenUserNameAndPasswordAreNotValid() {
+    	username = ""; 
+    	EXCEPTION_MESSAGE_EXPECTED = "Invalid username";
+    	
+    	assertThrows(IllegalArgumentException.class, ()-> {
+    		Long id = userService.getUserIdByUsername(username);
+    		}, 
+    		EXCEPTION_MESSAGE_EXPECTED);
     }
 }

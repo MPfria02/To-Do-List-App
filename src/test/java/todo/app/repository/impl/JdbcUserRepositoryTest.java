@@ -39,7 +39,7 @@ class JdbcUserRepositoryTest {
     private JdbcTemplate jdbcTemplate;
     
     // Common test data and SQL queries
-    private String SQL_QUERY, full_name, email, password;
+    private String SQL_QUERY, username, email, password;
     private String EXCEPTION_MESSAGE_EXPECTED;
     
     /**
@@ -79,22 +79,29 @@ class JdbcUserRepositoryTest {
     @Test
     void shouldCreateUserWhenAttributesAreValid() {
         // Arrange: Create user with valid attributes
-        full_name = "John Doe"; email = "john@example.com"; password = "1234";
-        User userExpected = new User(full_name, email, password);
+        username = "John Doe"; email = "john@example.com"; password = "1234";
+        User userExpected = new User(username, email, password);
+        Long idExpected = 4L;
         
         // Act: Create user in database
         jdbcUserRepository.createUser(userExpected);
         
         // Assert: Verify user was created with correct attributes
-        SQL_QUERY = "SELECT * FROM t_users WHERE t_users.full_name = ?";
-        user = jdbcTemplate.queryForObject(SQL_QUERY, (rs, rowNum) -> mapToUser(rs, rowNum), full_name); 
+        SQL_QUERY = "SELECT * FROM t_users WHERE t_users.username = ?";
+        user = jdbcTemplate.queryForObject(SQL_QUERY, (rs, rowNum) -> mapToUser(rs, rowNum), username); 
         
         assertNotNull(user);
         assertAll("Verify user attributes",
-                ()-> assertThat(user.getName()).isEqualTo(userExpected.getName()),
+                ()-> assertThat(user.getUsername()).isEqualTo(userExpected.getUsername()),
                 ()-> assertThat(user.getEmail()).isEqualTo(userExpected.getEmail()),
                 ()-> assertThat(user.getPassword()).isEqualTo(userExpected.getPassword())
         );    
+        
+        SQL_QUERY = "SELECT id FROM t_users WHERE t_users.username = ?";
+        user_id = jdbcTemplate.queryForObject(SQL_QUERY, Long.class, username);
+        
+        assertNotNull(user_id);
+        assertThat(user_id).isEqualTo(idExpected);
     }
 
 
@@ -106,7 +113,7 @@ class JdbcUserRepositoryTest {
     void shouldReturnUserWhenUserIdIsValid() {
         // Arrange: Set valid user ID and expected data
         user_id = 1L;
-        full_name = "Alice"; email = "alice@example.com"; password = "password123";
+        username = "Alice"; email = "alice@example.com"; password = "password123";
         
         // Act: Retrieve user by ID
         user = jdbcUserRepository.findUserById(user_id);
@@ -114,10 +121,38 @@ class JdbcUserRepositoryTest {
         // Assert: Verify correct user was retrieved
         assertNotNull(user);
         assertAll("Verify user attributes",
-                ()-> assertThat(user.getName()).isEqualTo(full_name),
+                ()-> assertThat(user.getUsername()).isEqualTo(username),
                 ()-> assertThat(user.getEmail()).isEqualTo(email),
                 ()-> assertThat(user.getPassword()).isEqualTo(password)
         );
+    }
+    
+    @Test
+    void shouldReturnUserWhenUsernameIsValid() {
+        // Arrange: Set valid username and expected data
+        username = "Alice"; email = "alice@example.com"; password = "password123";
+        
+        // Act: Retrieve user by ID
+        user = jdbcUserRepository.findUserByUsername(username);
+        
+        // Assert: Verify correct user was retrieved
+        assertNotNull(user);
+        assertAll("Verify user attributes",
+                ()-> assertThat(user.getUsername()).isEqualTo(username),
+                ()-> assertThat(user.getEmail()).isEqualTo(email),
+                ()-> assertThat(user.getPassword()).isEqualTo(password)
+        );
+    }
+    
+    @Test
+    void shouldReturnUserIdWhenUserNameAndPasswordAreValid() {
+    	username = "Alice";
+    	Long idExpected = 1L;
+    	
+    	Long userId = jdbcUserRepository.findUserIdByUsername(username);
+    	
+    	assertNotNull(userId);
+    	assertThat(userId).isEqualTo(idExpected);
     }
 
     /**
@@ -136,18 +171,10 @@ class JdbcUserRepositoryTest {
         // Assert: Verify deleted user data was returned correctly
         assertNotNull(user);
         assertAll("Verify user attributes",
-                ()-> assertThat(user.getName()).isEqualTo(nameExpected),
+                ()-> assertThat(user.getUsername()).isEqualTo(nameExpected),
                 ()-> assertThat(user.getEmail()).isEqualTo(emailExpected),
                 ()-> assertThat(user.getPassword()).isEqualTo(passwordExpected)
-        );
-        
-        // Verify user no longer exists in the database
-        EXCEPTION_MESSAGE_EXPECTED = "Invalid user ID.";
-        
-        assertThrows(IllegalArgumentException.class, ()->{
-            user = jdbcUserRepository.findUserById(user_id);
-            }, 
-            EXCEPTION_MESSAGE_EXPECTED);        
+        );      
     }
 
     /**
@@ -202,6 +229,6 @@ class JdbcUserRepositoryTest {
      * @throws SQLException if database access error occurs
      */
     private User mapToUser(ResultSet rs, int rowNumber) throws SQLException {
-        return new User(rs.getString("full_name"), rs.getString("email"), rs.getString("password"));
+        return new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
     }
 }

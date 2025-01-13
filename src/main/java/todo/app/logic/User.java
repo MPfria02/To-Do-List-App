@@ -11,7 +11,7 @@ package todo.app.logic;
  */
 public class User extends Entity {
 	
-	private String name;
+	private String username;
 	private String email;
 	private String password;
 	
@@ -22,9 +22,9 @@ public class User extends Entity {
      * @param email      The email address of the user
      * @param password   The password for the user account
      */
-	public User(String name, String email, String password) {
+	public User(String username, String email, String password) {
 		super();
-		this.name = name;
+		this.username = username;
 		this.email = email;
 		this.password = password;
 	}
@@ -32,8 +32,8 @@ public class User extends Entity {
 	/**
 	 * 	Returns the name of the user account
 	 */
-	public String getName() {
-		return name;
+	public String getUsername() {
+		return username;
 	}
 
 	/**

@@ -31,6 +31,23 @@ public interface UserRepository {
      */
     User findUserById(Long id);
     
+    /**
+     * Finds a user by their username.
+     * 
+     * @param username The username of the user.
+     * @return The User object.
+     */
+    User findUserByUsername(String username);
+    
+    /**
+     * Finds a user id by their username.
+     * 
+     * @param username The username of the user.
+     * @return The User ID if name is valid
+     * 
+     */
+    Long findUserIdByUsername(String username);
+    
 
     /**
      * Deletes a user from the database by their unique identifier.

@@ -1,4 +1,4 @@
-INSERT INTO t_users (full_name, email, password) VALUES
+INSERT INTO t_users (username, email, password) VALUES
 ('Alice', 'alice@example.com', 'password123'),
 ('Bob', 'bob@example.com', 'securepass'),
 ('Charlie', 'charlie@example.com', 'mypassword');
