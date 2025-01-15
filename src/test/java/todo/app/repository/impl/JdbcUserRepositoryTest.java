@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 
 import todo.app.logic.User;
 
@@ -95,8 +96,16 @@ class JdbcUserRepositoryTest {
                 ()-> assertThat(user.getUsername()).isEqualTo(userExpected.getUsername()),
                 ()-> assertThat(user.getEmail()).isEqualTo(userExpected.getEmail()),
                 ()-> assertThat(user.getPassword()).isEqualTo(userExpected.getPassword())
-        );    
+        );  
         
+        String roleExpectedString = "ROLE_USER";
+        
+        SQL_QUERY = "SELECT authority FROM t_authorities WHERE t_authorities.username = ?";
+        String userRole = jdbcTemplate.queryForObject(SQL_QUERY, String.class, username);
+        
+        assertNotNull(userRole);
+        assertThat(userRole).isEqualTo(roleExpectedString);
+       
         SQL_QUERY = "SELECT id FROM t_users WHERE t_users.username = ?";
         user_id = jdbcTemplate.queryForObject(SQL_QUERY, Long.class, username);
         

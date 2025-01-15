@@ -118,7 +118,7 @@ public class JdbcUserRepository implements UserRepository {
     
     private void createUserAuthorities(User user) {
 		Long user_id = findUserIdByUsername(user.getUsername());	
-		SQL_QUERY = "INSERT INTO t_t_authorities (username, authority, user_id) VALUES (?,?,?)";
+		SQL_QUERY = "INSERT INTO t_authorities (username, authority, user_id) VALUES (?,?,?)";
 		jdbcTemplate.update(SQL_QUERY, user.getUsername(), ROLE_USER, user_id);	
 	}
 }
