@@ -2,6 +2,9 @@ package todo.app.service.impl;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import todo.app.logic.User;
 import todo.app.repository.UserRepository;
 import todo.app.service.UserService;
@@ -9,6 +12,9 @@ import todo.app.service.UserService;
 public class UserServiceImpl implements UserService {
 
 	private UserRepository userRepository;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	
 	public UserServiceImpl(UserRepository userRepository) {
 		this.userRepository = userRepository;
@@ -20,7 +26,8 @@ public class UserServiceImpl implements UserService {
 			throw new IllegalArgumentException("User attributes cannot be either null or empty.");
 		}
 		
-		userRepository.createUser(user);
+		User newUser = new User(user.getUsername(), user.getEmail(), passwordEncoder.encode(user.getPassword()));
+		userRepository.createUser(newUser);
 	}
 
 	@Override

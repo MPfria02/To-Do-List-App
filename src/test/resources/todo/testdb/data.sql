@@ -8,3 +8,8 @@ INSERT INTO t_tasks (id, title, description, user_id) VALUES
 (1,'Finish project', 'Complete the final draft by Friday', 2),
 (2,'Book tickets', 'Vacation tickets to Hawaii', 1),
 (1,'Pay bills', 'Electricity and water bills', 3);
+
+INSERT INTO t_authorities (username, authority, user_id) VALUES
+('Alice', 'ROLE_USER', 1),
+('Bob', 'ROLE_ADMIN', 2),
+('Charlie', 'ROLE_USER', 3);

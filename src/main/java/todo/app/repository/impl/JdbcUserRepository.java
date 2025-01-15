@@ -36,7 +36,9 @@ public class JdbcUserRepository implements UserRepository {
      * Note: In a production environment, consider using prepared statements 
      * or a more robust SQL management approach.
      */
-    private String sqlStatement;
+    private String SQL_QUERY;
+    
+    private final String ROLE_USER = "ROLE_USER";
 
     /**
      * Constructs a new JdbcUserRepository with the specified data source.
@@ -53,50 +55,51 @@ public class JdbcUserRepository implements UserRepository {
 	
 	@Override
 	public void createUser(User user) {	
-		sqlStatement = "INSERT INTO t_users (username, email, password) VALUES (?,?,?)";
-		jdbcTemplate.update(sqlStatement, user.getUsername(), user.getEmail(), user.getPassword());		
+		SQL_QUERY = "INSERT INTO t_users (username, email, password) VALUES (?,?,?)";
+		jdbcTemplate.update(SQL_QUERY, user.getUsername(), user.getEmail(), user.getPassword());
+		createUserAuthorities(user);
 	}
 	
 	@Override
 	public User findUserById(Long id) {
-		sqlStatement = "SELECT * FROM t_users WHERE id = ?";
-		return jdbcTemplate.queryForObject(sqlStatement, 
+		SQL_QUERY = "SELECT * FROM t_users WHERE id = ?";
+		return jdbcTemplate.queryForObject(SQL_QUERY, 
 				(rs, rowNum) -> mapToUser(rs, rowNum),
 				id);
 	}
 	
 	@Override
 	public User findUserByUsername(String username) {
-		sqlStatement = "SELECT * FROM t_users WHERE t_users.username = ?";
-		return jdbcTemplate.queryForObject(sqlStatement, (rs, rowNum) -> mapToUser(rs, rowNum),
+		SQL_QUERY = "SELECT * FROM t_users WHERE t_users.username = ?";
+		return jdbcTemplate.queryForObject(SQL_QUERY, (rs, rowNum) -> mapToUser(rs, rowNum),
 				username);
 	}
 	
 	@Override
 	public Long findUserIdByUsername(String name) {
-		sqlStatement = "SELECT id FROM t_users WHERE t_users.username = ?";
-		return jdbcTemplate.queryForObject(sqlStatement, Long.class, name);
+		SQL_QUERY = "SELECT id FROM t_users WHERE t_users.username = ?";
+		return jdbcTemplate.queryForObject(SQL_QUERY, Long.class, name);
 	}
 	
 	@Override
 	public User deleteUserById(Long id) {
 		User user = findUserById(id);		
-		sqlStatement = "DELETE FROM t_users WHERE id = ?";
-		jdbcTemplate.update(sqlStatement, id);
+		SQL_QUERY = "DELETE FROM t_users WHERE id = ?";
+		jdbcTemplate.update(SQL_QUERY, id);
 		return user;
 	}
 
 	@Override
 	public List<User> getAll() {
-		sqlStatement = "SELECT * FROM t_users";
-		return jdbcTemplate.query(sqlStatement, 
+		SQL_QUERY = "SELECT * FROM t_users";
+		return jdbcTemplate.query(SQL_QUERY, 
 				(rs, rowNum) -> mapToUser(rs, rowNum));
 	}
 	
 	@Override
     public boolean existById(Long id) {
-		sqlStatement = "SELECT COUNT(id) FROM t_users WHERE t_users.id = ?";
-	    int userIdExists = jdbcTemplate.queryForObject(sqlStatement, Integer.class, id);
+		SQL_QUERY = "SELECT COUNT(id) FROM t_users WHERE t_users.id = ?";
+	    int userIdExists = jdbcTemplate.queryForObject(SQL_QUERY, Integer.class, id);
 	    return userIdExists != 0;
 	}
 	
@@ -112,4 +115,10 @@ public class JdbcUserRepository implements UserRepository {
     private User mapToUser(ResultSet rs, int rowNumber) throws SQLException {
         return new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
     }
+    
+    private void createUserAuthorities(User user) {
+		Long user_id = findUserIdByUsername(user.getUsername());	
+		SQL_QUERY = "INSERT INTO t_t_authorities (username, authority, user_id) VALUES (?,?,?)";
+		jdbcTemplate.update(SQL_QUERY, user.getUsername(), ROLE_USER, user_id);	
+	}
 }
