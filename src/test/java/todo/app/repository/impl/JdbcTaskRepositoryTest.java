@@ -84,7 +84,7 @@ class JdbcTaskRepositoryTest {
         task = new Task(title, description);
         task.setUserId(user_id);
         
-        jdbcTaskRepository.createTask(task);
+        jdbcTaskRepository.createTask(task, user_id);
         
         SQL_QUERY = "SELECT * FROM t_tasks WHERE title = ?";
         Task resultTask = jdbcTemplate.queryForObject(SQL_QUERY, 
@@ -134,11 +134,11 @@ class JdbcTaskRepositoryTest {
      */
     @Test
     void shouldUpdateTaskWhenTaskAttributesAreValid() {
-        task_id = 1L;
+        task_id = 1L; user_id = 1L;
         task = new Task("Hello World", "Start programming");
-        task.setUserId(1L);
+        task.setUserId(user_id);
         
-        jdbcTaskRepository.updateTask(task_id, task);
+        jdbcTaskRepository.updateTask(task_id, user_id, task);
         
         Task resultTask = jdbcTemplate.queryForObject(FIND_TASK_SQL, 
             (rs, rowNumber) -> mapToTask(rs, rowNumber), task_id, task.getUserId());
@@ -217,6 +217,10 @@ class JdbcTaskRepositoryTest {
      * @throws SQLException if database access error occurs
      */
     private Task mapToTask(ResultSet rs, int rowNumber) throws SQLException {
-        return new Task(rs.getString("title"), rs.getString("description"));
+       Long taskId = rs.getLong("id");
+  	   Task task = new Task(rs.getString("title"), rs.getString("description"));
+  	   task.setEntityId(taskId);
+  	   return task;
+//        return new Task(rs.getString("title"), rs.getString("description"));
     }
 }

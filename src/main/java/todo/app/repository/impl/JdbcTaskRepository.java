@@ -46,13 +46,13 @@ public class JdbcTaskRepository implements TaskRepository {
     }
 
     @Override
-    public void createTask(Task task) {
+    public void createTask(Task task, Long user_id) {
    
         Long nextTaskId = getNextTaskIdForUser(task.getUserId());
          
         // Inserts task into database
         sqlStatement = "INSERT INTO t_tasks (id, title, description, user_id) values (?,?,?,?)";
-        jdbcTemplate.update(sqlStatement,nextTaskId, task.getTitle(), task.getDescription(), task.getUserId());
+        jdbcTemplate.update(sqlStatement,nextTaskId, task.getTitle(), task.getDescription(), user_id);
     }
 
 	@Override
@@ -64,15 +64,15 @@ public class JdbcTaskRepository implements TaskRepository {
     }
 
     @Override
-    public void updateTask(Long task_id, Task task) {
+    public void updateTask(Long task_id, Long user_id, Task task) {
         // Updates task in database
         sqlStatement = " UPDATE t_tasks"
             + " SET title = ?, description = ?"
-            + " WHERE id = ? ";
+            + " WHERE id = ? AND user_id = ?";
 
         jdbcTemplate.update(sqlStatement, task.getTitle(), 
         								  task.getDescription(), 
-        								  task_id);
+        								  task_id, user_id);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class JdbcTaskRepository implements TaskRepository {
     @Override
     public boolean existById(Long task_id, Long user_id) {
         // Checks if task ID exists and belongs to the user
-        sqlStatement = " SELECT id"
+        sqlStatement = " SELECT t_tasks.id"
             + " FROM t_tasks"
             + " JOIN t_users"
             + " ON t_tasks.user_id = t_users.id WHERE t_users.id = ?";
@@ -111,7 +111,8 @@ public class JdbcTaskRepository implements TaskRepository {
         return userTasks.contains(task_id);
     }
 
-   private Long getNextTaskIdForUser(Long user_id) {
+   @Override
+   public Long getNextTaskIdForUser(Long user_id) {
 		
     	sqlStatement = "SELECT COUNT(id) FROM t_tasks WHERE user_id = ?";
 		Long max_task_id = jdbcTemplate.queryForObject(sqlStatement, Long.class, user_id); 
@@ -128,6 +129,10 @@ public class JdbcTaskRepository implements TaskRepository {
     * @throws SQLException if database access error occurs
     */
    private Task mapToTask(ResultSet rs, int rowNumber) throws SQLException {
-       return new Task(rs.getString("title"), rs.getString("description"));
+       Long taskId = rs.getLong("id");
+	   Task task = new Task(rs.getString("title"), rs.getString("description"));
+	   task.setEntityId(taskId);
+	   return task;
+//	   return new Task(rs.getString("title"), rs.getString("description"));
    }
 }
