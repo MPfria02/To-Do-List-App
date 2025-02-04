@@ -25,28 +25,17 @@ import todo.app.service.UserService;
 @Import({SecurityConfig.class, SystemTestConfig.class})
 class AuthControllerTest {
 
-//    @Autowired
-//    private WebApplicationContext context;
-
 	@Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @SuppressWarnings("removal")
+	@MockBean
     private UserService userService;
 
-//    @BeforeEach
-//    void setup() {
-//        // Configure MockMvc with security
-//        this.mockMvc = MockMvcBuilders
-//            .webAppContextSetup(context)
-//            .build();
-//    }
-
     @Test
-    void handleUserRegistrationRequest() throws Exception {
+    void shouldRegisterUserWhenCredentialsAreValid() throws Exception {
         // Arrange
         String username = "MockUser";
-        User user = new User(username, "mock@test.com", "1234");
         
         // Mock the userService methods
         doNothing().when(userService).saveUser(any(User.class));
