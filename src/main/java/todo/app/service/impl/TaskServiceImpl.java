@@ -14,11 +14,11 @@ public class TaskServiceImpl implements TaskService {
 		this.taskRepository = taskRepository;
 	}
 	@Override
-	public void saveTask(Task task) {
+	public void saveTask(Task task, Long user_id) {
 		// Validates task before insertion
         validateTaskAttributes(task);
         
-        taskRepository.createTask(task);
+        taskRepository.createTask(task, user_id);
 	}
 
 	@Override
@@ -30,14 +30,19 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public void updateTask(Long task_id, Task task) {
+	public Long getNextTaskIdForUser(Long user_id) {
+		return taskRepository.getNextTaskIdForUser(user_id);
+	}
+	
+	@Override
+	public void updateTask(Long task_id, Long user_id, Task task) {
 		// Validates task ID before querying
-        validateTaskId(task_id, task.getUserId());
+        validateTaskId(task_id, user_id);
     	
     	// Validates task before update
         validateTaskAttributes(task);
         
-        taskRepository.updateTask(task_id, task);
+        taskRepository.updateTask(task_id, user_id, task);
 
 	}
 

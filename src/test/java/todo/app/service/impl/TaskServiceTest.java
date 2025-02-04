@@ -51,10 +51,10 @@ class TaskServiceTest {
     @Test
     void shouldThrowExceptionWhenTaskAttributesAreEmpty() {
         task = new Task("", "Eggs, milk");
-        task.setUserId(3L);
+        user_id = 3L;
         
         assertThrows(IllegalArgumentException.class, () -> {
-            taskService.saveTask(task);
+            taskService.saveTask(task, user_id);
         }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
     }
     
@@ -64,10 +64,10 @@ class TaskServiceTest {
     @Test
     void shouldThrowExceptionWhenTaskAttributesAreNull() {
         task = new Task("Buy Groceries", null);
-        task.setUserId(3L);
+        user_id = 1L;
         
         assertThrows(IllegalArgumentException.class, () -> {
-            taskService.saveTask(task);
+            taskService.saveTask(task, user_id);
         }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
     }
     

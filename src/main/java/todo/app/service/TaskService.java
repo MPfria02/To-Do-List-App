@@ -20,7 +20,7 @@ public interface TaskService {
      * @param task the task entity to be saved
      * @throws IllegalArgumentException if the task object is null or contains invalid data
      */
-    void saveTask(Task task);
+    void saveTask(Task task, Long user_id);
 
     /**
      * Retrieves a specific task by its ID.
@@ -31,6 +31,8 @@ public interface TaskService {
      * @throws IllegalArgumentException if no task exists with the given ID
      */
     Task getTaskById(Long task_id, Long user_id);
+    
+    Long getNextTaskIdForUser(Long user_id);
 
     /**
      * Updates an existing task with new information. Only the owner of the task
@@ -40,7 +42,7 @@ public interface TaskService {
      * @param task the task object containing the updated information
      * @throws IllegalArgumentException if either parameter is null or if no task exists with the given ID
      */
-    void updateTask(Long task_id, Task task);
+    void updateTask(Long task_id, Long user_id, Task task);
 
     /**
      * Removes a task from the system.
