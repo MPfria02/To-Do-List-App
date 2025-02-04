@@ -22,13 +22,16 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 	
-	@Autowired
-	private DataSource dataSource;
-	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests((authz) -> authz
-				.requestMatchers(HttpMethod.POST, "/todo/app/register").permitAll())
+				.requestMatchers(HttpMethod.POST, "/todo/app/register").permitAll()
+				.requestMatchers(HttpMethod.GET,"/todo/app/tasks/**").hasRole("USER")
+				.requestMatchers(HttpMethod.POST,"/todo/app/tasks/**").hasRole("USER")
+				.requestMatchers(HttpMethod.PUT,"/todo/app/tasks/**").hasRole("USER")
+				.requestMatchers(HttpMethod.DELETE,"/todo/app/tasks/**").hasRole("USER")
+				.requestMatchers(HttpMethod.GET, "/todo/app/users/**").hasRole("ADMIN")
+				.requestMatchers(HttpMethod.DELETE, "/todo/app/users/**").hasRole("ADMIN"))
 		.httpBasic(withDefaults())
 		.csrf((CsrfConfigurer::disable));
 		
@@ -37,7 +40,7 @@ public class SecurityConfig {
 	}
 	
 	@Bean
-	public UserDetailsService userDetailsService(DataSource dataSource) {
+	public UserDetailsService userDetailsService(@Autowired DataSource dataSource) {
 		   JdbcUserDetailsManager manager = new JdbcUserDetailsManager(dataSource);
 	        
 	        // Configure custom queries
