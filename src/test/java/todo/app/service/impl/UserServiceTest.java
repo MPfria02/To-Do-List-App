@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import todo.app.config.SystemTestConfig;
+import todo.app.exception.InvalidUserDataException;
+import todo.app.exception.UserNotFoundException;
 import todo.app.logic.User;
+import todo.app.security.SecurityConfig;
 import todo.app.service.UserService;
 
 /**
@@ -25,7 +28,7 @@ import todo.app.service.UserService;
  * @see todo.app.logic.User
  * @see todo.app.config.SystemTestConfig
  */
-@SpringJUnitConfig(SystemTestConfig.class)
+@SpringJUnitConfig(classes = {SystemTestConfig.class, SecurityConfig.class})
 class UserServiceTest {
 
 	private User user;
@@ -50,7 +53,7 @@ class UserServiceTest {
         user = new User(username, email, password);
         
         // Act & Assert: Verify exception is thrown for empty attributes
-        assertThrows(IllegalArgumentException.class, 
+        assertThrows(InvalidUserDataException.class, 
                 ()-> { 
                      userService.saveUser(user);
                 }, 
@@ -69,7 +72,7 @@ class UserServiceTest {
         user = new User(username, email, password);
         
         // Act & Assert: Verify exception is thrown for null attributes
-        assertThrows(IllegalArgumentException.class, 
+        assertThrows(InvalidUserDataException.class, 
                 ()-> { 
                      userService.saveUser(user);
                 }, 
@@ -87,12 +90,12 @@ class UserServiceTest {
         EXCEPTION_MESSAGE_EXPECTED = "Invalid user ID.";
         
         // Act & Assert: Verify exception is thrown for invalid ID
-        assertThrows(IllegalArgumentException.class, ()->{
+        assertThrows(UserNotFoundException.class, ()->{
             user = userService.getUserById(user_id);
             }, 
             EXCEPTION_MESSAGE_EXPECTED);
         
-        assertThrows(IllegalArgumentException.class, ()->{
+        assertThrows(UserNotFoundException.class, ()->{
             user = userService.deleteUserById(user_id);
             }, 
             EXCEPTION_MESSAGE_EXPECTED);
@@ -103,7 +106,7 @@ class UserServiceTest {
     	username = ""; 
     	EXCEPTION_MESSAGE_EXPECTED = "Invalid username";
     	
-    	assertThrows(IllegalArgumentException.class, ()-> {
+    	assertThrows(InvalidUserDataException.class, ()-> {
     		Long id = userService.getUserIdByUsername(username);
     		}, 
     		EXCEPTION_MESSAGE_EXPECTED);

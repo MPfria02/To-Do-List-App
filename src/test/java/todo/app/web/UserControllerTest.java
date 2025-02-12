@@ -11,20 +11,22 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import todo.app.config.SystemTestConfig;
+import todo.app.exception.UserNotFoundException;
 import todo.app.logic.User;
 import todo.app.security.SecurityConfig;
 import todo.app.service.UserService;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.*;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Arrays;
 import java.util.List;
-
-
-
 
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class, SystemTestConfig.class})
@@ -37,14 +39,17 @@ class UserControllerTest {
 	@MockBean
 	private UserService userService;
 	
+	private static final String USERS_URL = "/todo/app/users/";
+	
 	@Test
 	@WithMockUser(roles = {"ADMIN"})
 	public void shouldReturnUserDetailsWhenRequestedByAdmin() throws Exception {
 		// Arrange
-		given(userService.getUserById(1L)).willReturn(new User("mockUser", "mock@test.com", "1234"));
+		Long userId = 1L;
+		given(userService.getUserById(userId)).willReturn(new User("mockUser", "mock@test.com", "1234"));
 		
 		// Act & Assert
-		mockMvc.perform(get("/todo/app/users/1"))
+		mockMvc.perform(get(USERS_URL + userId))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			.andExpect(jsonPath("$.username").value("mockUser"))
@@ -53,20 +58,47 @@ class UserControllerTest {
 		// Verify
 		verify(userService).getUserById(1L);	
 	}
-
+	
 	@Test
 	@WithMockUser(roles = {"USER"})
 	public void shouldReturnForbiddenWhenUnauthorizedUserAccessesEndpoint() throws Exception {
+		// Arrange
+		Long userId = 1L;
 		// Act & Assert
-		mockMvc.perform(get("/todo/app/users/1"))
+		mockMvc.perform(get(USERS_URL + userId))
 			.andExpect(status().isForbidden());
+	}
+	
+	@Test
+	@WithMockUser(roles = {"ADMIN"})
+	void shouldReturnNotFoundWhenAccessInvalidUserId() throws Exception {
+		// Arrange
+		Long userId = 5L;
+		String exceptionExpectedMessage = "Invalid user ID.";
+		given(userService.getUserById(userId)).willThrow(new UserNotFoundException("Invalid user ID."));
+
+		
+		// Act & Assert
+		mockMvc.perform(get(USERS_URL + userId))
+			.andExpect(status().isNotFound())
+			.andExpect(result ->  {
+			    Throwable ex = result.getResolvedException();
+			    assertNotNull(ex);
+			    assertTrue(ex instanceof UserNotFoundException);
+			    assertEquals(exceptionExpectedMessage, ex.getMessage());
+			});
+		
+		// Verify
+		verify(userService).getUserById(userId);
 	}
 
 	@Test
 	@WithAnonymousUser
 	public void shouldReturnUnauthorizedWhenAnonymousUserTriesToAccessUserById() throws Exception {
+		// Arrange
+		Long userId = 1L;
 		// Act & Assert
-		mockMvc.perform(get("/todo/app/users/1"))
+		mockMvc.perform(get(USERS_URL + userId))
 			.andExpect(status().isUnauthorized());
 	}
 	
@@ -78,7 +110,7 @@ class UserControllerTest {
 		given(userService.getAllUsers()).willReturn(users);
 		
 		// Act & Assert
-		mockMvc.perform(get("/todo/app/users"))
+		mockMvc.perform(get(USERS_URL))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			.andExpect(jsonPath("$[0].username").value("mockUser"))
@@ -92,7 +124,7 @@ class UserControllerTest {
 	@WithMockUser(roles = {"USER"})
 	public void shouldReturnForbiddenWhenUnauthorizedUserRequestsUsers() throws Exception {
 		// Act & Assert
-		mockMvc.perform(get("/todo/app/users"))
+		mockMvc.perform(get(USERS_URL))
 			.andExpect(status().isForbidden());
 	}
 	
@@ -100,7 +132,7 @@ class UserControllerTest {
 	@WithAnonymousUser
 	public void shouldReturnUnauthorizedWhenAnonymousUserRequestsUsers() throws Exception {
 		// Act & Assert
-		mockMvc.perform(get("/todo/app/users"))
+		mockMvc.perform(get(USERS_URL))
 			.andExpect(status().isUnauthorized());
 	}
 
@@ -108,10 +140,11 @@ class UserControllerTest {
 	@WithMockUser(roles = {"ADMIN"})
 	public void shouldDeleteUserByIdWhenRequestedByAdmin() throws Exception {
 		// Arrange
-		given(userService.deleteUserById(1L)).willReturn(new User("mockUser", "mock@test.com", "1234"));
+		Long userId = 1L;
+		given(userService.deleteUserById(userId)).willReturn(new User("mockUser", "mock@test.com", "1234"));
 		
 		// Act & Assert
-		mockMvc.perform(delete("/todo/app/users/1"))
+		mockMvc.perform(delete(USERS_URL + userId))
 			.andExpect(status().isNoContent());
 		
 		// Verify

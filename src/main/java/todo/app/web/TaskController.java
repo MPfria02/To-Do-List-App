@@ -32,18 +32,12 @@ public class TaskController {
 	@GetMapping("/todo/app/tasks/{taskId}")
 	public ResponseEntity<Task> getTaskById(@PathVariable Long taskId, Authentication authentication) {
 		Long userId = getUserId(authentication);
-		Task task;
-		
-		try {
-			task = taskService.getTaskById(taskId, userId);
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.notFound().build();
-		}
-		
+		Task task = taskService.getTaskById(taskId, userId);
+
 		return ResponseEntity.ok(task);
 	}
 	
-	@GetMapping("/todo/app/tasks")
+	@GetMapping("/todo/app/tasks/")
 	public ResponseEntity<List<Task>> getAllTasks(Authentication authentication) {
 		Long userId = getUserId(authentication);
 		List<Task> tasks = taskService.getAllTasks(userId);
@@ -51,7 +45,7 @@ public class TaskController {
 		return ResponseEntity.ok(tasks);
 	}
 	
-	@PostMapping("/todo/app/tasks")
+	@PostMapping("/todo/app/tasks/")
 	public ResponseEntity<Void> createTask(@RequestBody Task task, Authentication authentication) {
 		// Save new task
 		Long userId = getUserId(authentication);

@@ -2,6 +2,8 @@ package todo.app.service.impl;
 
 import java.util.List;
 
+import todo.app.exception.InvalidTaskDataException;
+import todo.app.exception.TaskNotFoundException;
 import todo.app.logic.Task;
 import todo.app.repository.TaskRepository;
 import todo.app.service.TaskService;
@@ -70,7 +72,7 @@ public class TaskServiceImpl implements TaskService {
      */
     private void validateTaskAttributes(Task task) {
         if (!isValidTask(task)) {
-            throw new IllegalArgumentException("Invalid task attributes. Title and description cannot be empty or null.");
+            throw new InvalidTaskDataException("Invalid task attributes. Title and description cannot be empty or null.");
         }
     }
     
@@ -87,7 +89,7 @@ public class TaskServiceImpl implements TaskService {
      */
     private void validateTaskId(Long task_id, Long user_id) {
         if (!taskRepository.existById(task_id, user_id)) {
-            throw new IllegalArgumentException("Invalid task ID.");
+            throw new TaskNotFoundException("Invalid task ID.");
         }
     }
     

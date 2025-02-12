@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import todo.app.exception.InvalidUserDataException;
+import todo.app.exception.UserNotFoundException;
 import todo.app.logic.User;
 import todo.app.repository.UserRepository;
 import todo.app.service.UserService;
@@ -23,7 +25,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void saveUser(User user) {		
 		if (!isValidUser(user)) {
-			throw new IllegalArgumentException("User attributes cannot be either null or empty.");
+			throw new InvalidUserDataException("User attributes cannot be either null or empty.");
 		}
 		
 		User newUser = new User(user.getUsername(), user.getEmail(), passwordEncoder.encode(user.getPassword()));
@@ -33,7 +35,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUserById(Long id) {
 		if (!userRepository.existById(id)) {
-			throw new IllegalArgumentException("Invalid user ID.");
+			throw new UserNotFoundException("Invalid user ID.");
 		}
 		return userRepository.findUserById(id);
 	}
@@ -41,7 +43,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Long getUserIdByUsername(String username) {
 		if (!hasValidUsername(username)) {
-			throw new IllegalArgumentException("Invalid username");
+			throw new InvalidUserDataException("Invalid username");
 		}
 		return userRepository.findUserIdByUsername(username);
 	}
@@ -49,7 +51,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User deleteUserById(Long id) {
 		if (!userRepository.existById(id)) {
-			throw new IllegalArgumentException("Invalid user ID.");
+			throw new UserNotFoundException("Invalid user ID.");
 		}
 		return userRepository.deleteUserById(id);
 	}

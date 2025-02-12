@@ -4,11 +4,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import todo.app.config.SystemTestConfig;
+import todo.app.exception.InvalidTaskDataException;
+import todo.app.exception.TaskNotFoundException;
 import todo.app.logic.Task;
+import todo.app.security.SecurityConfig;
 import todo.app.service.TaskService;
+import todo.app.service.UserService;
 
 /**
  * Integration test suite for the TaskService implementation, focusing on input validation
@@ -27,12 +32,12 @@ import todo.app.service.TaskService;
  * @see todo.app.config.SystemTestConfig
  */
 
-@SpringJUnitConfig(SystemTestConfig.class)
+@SpringJUnitConfig(classes = {SystemTestConfig.class, SecurityConfig.class})
 class TaskServiceTest {
 	
 	@Autowired
 	TaskService taskService;
-	
+		
 	/** Task instance used across multiple test cases */
     private Task task;
     
@@ -53,7 +58,7 @@ class TaskServiceTest {
         task = new Task("", "Eggs, milk");
         user_id = 3L;
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidTaskDataException.class, () -> {
             taskService.saveTask(task, user_id);
         }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
     }
@@ -66,7 +71,7 @@ class TaskServiceTest {
         task = new Task("Buy Groceries", null);
         user_id = 1L;
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidTaskDataException.class, () -> {
             taskService.saveTask(task, user_id);
         }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
     }
@@ -79,11 +84,11 @@ class TaskServiceTest {
         task_id = 50L;
         user_id = 1L;
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(TaskNotFoundException.class, () -> {
             taskService.getTaskById(task_id, user_id);
         }, INVALID_TASK_ID_EXCEPTION_MESSAGE);    
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(TaskNotFoundException.class, () -> {
             taskService.deleteTaskById(task_id, user_id);
         }, INVALID_TASK_ID_EXCEPTION_MESSAGE); 
     }
