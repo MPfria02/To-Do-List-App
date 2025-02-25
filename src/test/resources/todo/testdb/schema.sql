@@ -1,4 +1,5 @@
 DROP TABLE t_tasks IF EXISTS;
+DROP TABLE t_authorities IF EXISTS;
 DROP TABLE t_users IF EXISTS;
 
 
