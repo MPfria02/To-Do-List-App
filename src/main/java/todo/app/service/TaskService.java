@@ -3,6 +3,7 @@ package todo.app.service;
 import java.util.List;
 
 import todo.app.logic.Task;
+import todo.app.logic.TaskDTO;
 
 /**
  * Provides core functionality for managing tasks within the system. This service handles
@@ -20,7 +21,7 @@ public interface TaskService {
      * @param task the task entity to be saved
      * @throws IllegalArgumentException if the task object is null or contains invalid data
      */
-    void saveTask(Task task, Long user_id);
+    void saveTask(TaskDTO task, Long user_id);
 
     /**
      * Retrieves a specific task by its ID.
@@ -30,7 +31,7 @@ public interface TaskService {
      * @return the requested Task object if found and accessible to the user
      * @throws IllegalArgumentException if no task exists with the given ID
      */
-    Task getTaskById(Long task_id, Long user_id);
+    TaskDTO getTaskById(Long task_id, Long user_id);
     
     Long getNextTaskIdForUser(Long user_id);
 
@@ -42,7 +43,7 @@ public interface TaskService {
      * @param task the task object containing the updated information
      * @throws IllegalArgumentException if either parameter is null or if no task exists with the given ID
      */
-    void updateTask(Long task_id, Long user_id, Task task);
+    void updateTask(Long task_id, Long user_id, TaskDTO task);
 
     /**
      * Removes a task from the system.
@@ -52,7 +53,7 @@ public interface TaskService {
      * @return the deleted Task object
      * @throws IllegalArgumentException if no task exists with the given ID
      */
-    Task deleteTaskById(Long task_id, Long user_id);
+    TaskDTO deleteTaskById(Long task_id, Long user_id);
 
     /**
      * Retrieves all tasks associated with a specific user.
@@ -60,5 +61,5 @@ public interface TaskService {
      * @param user_id the ID of the user whose tasks should be retrieved
      * @return a List of Task objects associated with the user, empty list if no tasks are found
      */
-    List<Task> getAllTasks(Long user_id);
+    List<TaskDTO> getAllTasks(Long user_id);
 }

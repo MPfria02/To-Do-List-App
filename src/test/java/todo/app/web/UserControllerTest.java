@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import todo.app.config.SystemTestConfig;
 import todo.app.exception.UserNotFoundException;
-import todo.app.logic.User;
+import todo.app.logic.UserDTO;
 import todo.app.security.SecurityConfig;
 import todo.app.service.UserService;
 
@@ -46,7 +46,7 @@ class UserControllerTest {
 	public void shouldReturnUserDetailsWhenRequestedByAdmin() throws Exception {
 		// Arrange
 		Long userId = 1L;
-		given(userService.getUserById(userId)).willReturn(new User("mockUser", "mock@test.com", "1234"));
+		given(userService.getUserById(userId)).willReturn(new UserDTO(1L, "mockUser", "mock@test.com"));
 		
 		// Act & Assert
 		mockMvc.perform(get(USERS_URL + userId))
@@ -106,7 +106,7 @@ class UserControllerTest {
 	@WithMockUser(roles = "ADMIN")
 	public void shouldReturnAllUsersWhenRequestedByAdmin() throws Exception {
 		// Arrange
-		List<User> users = Arrays.asList(new User("mockUser", "mock@test.com", "1234"));
+		List<UserDTO> users = Arrays.asList(new UserDTO(2L, "mockUser", "mock@test.com"));
 		given(userService.getAllUsers()).willReturn(users);
 		
 		// Act & Assert
@@ -141,7 +141,7 @@ class UserControllerTest {
 	public void shouldDeleteUserByIdWhenRequestedByAdmin() throws Exception {
 		// Arrange
 		Long userId = 1L;
-		given(userService.deleteUserById(userId)).willReturn(new User("mockUser", "mock@test.com", "1234"));
+		given(userService.deleteUserById(userId)).willReturn(new UserDTO(1L, "mockUser", "mock@test.com"));
 		
 		// Act & Assert
 		mockMvc.perform(delete(USERS_URL + userId))

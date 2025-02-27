@@ -11,6 +11,7 @@ import todo.app.config.SystemTestConfig;
 import todo.app.exception.InvalidTaskDataException;
 import todo.app.exception.TaskNotFoundException;
 import todo.app.logic.Task;
+import todo.app.logic.TaskDTO;
 import todo.app.security.SecurityConfig;
 import todo.app.service.TaskService;
 import todo.app.service.UserService;
@@ -39,7 +40,7 @@ class TaskServiceTest {
 	TaskService taskService;
 		
 	/** Task instance used across multiple test cases */
-    private Task task;
+    private TaskDTO taskDTO;
     
     /** Task and user identifiers used in test cases */
     private Long task_id, user_id;
@@ -55,11 +56,12 @@ class TaskServiceTest {
      */
     @Test
     void shouldThrowExceptionWhenTaskAttributesAreEmpty() {
-        task = new Task("", "Eggs, milk");
+        task_id = 1L;
+    	taskDTO = new TaskDTO("", "milk");
         user_id = 3L;
         
         assertThrows(InvalidTaskDataException.class, () -> {
-            taskService.saveTask(task, user_id);
+            taskService.saveTask(taskDTO, user_id);
         }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
     }
     
@@ -68,11 +70,11 @@ class TaskServiceTest {
      */
     @Test
     void shouldThrowExceptionWhenTaskAttributesAreNull() {
-        task = new Task("Buy Groceries", null);
+        taskDTO = new TaskDTO("Buy Groceries", null);
         user_id = 1L;
         
         assertThrows(InvalidTaskDataException.class, () -> {
-            taskService.saveTask(task, user_id);
+            taskService.saveTask(taskDTO, user_id);
         }, INVALID_TASK_ATTRIBUTES_EXCEPTION_MESSAGE);
     }
     

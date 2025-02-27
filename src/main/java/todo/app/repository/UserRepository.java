@@ -29,6 +29,9 @@ public interface UserRepository {
      * @throws InvalidCredentialsException if id is incorrect.
      * @throws UserNotFoundException if no user matches the credentials.
      */
+    
+    void updateUser(User user);
+    
     User findUserById(Long id);
     
     /**

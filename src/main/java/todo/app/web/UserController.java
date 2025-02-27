@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import todo.app.logic.User;
+import todo.app.logic.UserDTO;
 import todo.app.service.UserService;
 
 @RestController
@@ -21,15 +21,15 @@ public class UserController {
 	}
 	
 	@GetMapping("/todo/app/users/{userId}")
-	public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-		User user = userService.getUserById(userId);
-		return ResponseEntity.ok(user);
+	public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
+		UserDTO userDTO = userService.getUserById(userId);
+		return ResponseEntity.ok(userDTO);
 	}
 	
 	@GetMapping("/todo/app/users/")
-	public ResponseEntity<List<User>> getAllUsers() {
-		List<User> users = userService.getAllUsers();
-		return ResponseEntity.ok(users);
+	public ResponseEntity<List<UserDTO>> getAllUsers() {
+		List<UserDTO> usersDTO = userService.getAllUsers();
+		return ResponseEntity.ok(usersDTO);
 	}
 	
 	@DeleteMapping("/todo/app/users/{userId}") 

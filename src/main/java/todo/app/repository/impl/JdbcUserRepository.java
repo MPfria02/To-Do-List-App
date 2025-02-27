@@ -61,6 +61,12 @@ public class JdbcUserRepository implements UserRepository {
 	}
 	
 	@Override
+	public void updateUser(User user) {
+		SQL_QUERY = "UPDATE t_users SET username = ?, password = ? WHERE t_users.email = ?";
+		jdbcTemplate.update(SQL_QUERY, user.getUsername(), user.getPassword(), user.getEmail());
+	}
+	
+	@Override
 	public User findUserById(Long id) {
 		SQL_QUERY = "SELECT * FROM t_users WHERE id = ?";
 		return jdbcTemplate.queryForObject(SQL_QUERY, 
@@ -113,7 +119,10 @@ public class JdbcUserRepository implements UserRepository {
      * @throws SQLException if database access error occurs
      */
     private User mapToUser(ResultSet rs, int rowNumber) throws SQLException {
-        return new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
+    	Long userId = rs.getLong("id");
+        User user =  new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
+        user.setEntityId(userId);
+        return user;
     }
     
     private void createUserAuthorities(User user) {

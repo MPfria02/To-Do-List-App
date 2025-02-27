@@ -1,10 +1,13 @@
 package todo.app.service.impl;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import todo.app.exception.InvalidTaskDataException;
 import todo.app.exception.TaskNotFoundException;
 import todo.app.logic.Task;
+import todo.app.logic.TaskDTO;
+import todo.app.mapper.TaskMapper;
 import todo.app.repository.TaskRepository;
 import todo.app.service.TaskService;
 
@@ -16,19 +19,25 @@ public class TaskServiceImpl implements TaskService {
 		this.taskRepository = taskRepository;
 	}
 	@Override
-	public void saveTask(Task task, Long user_id) {
+	public void saveTask(TaskDTO taskDTO, Long user_id) {
 		// Validates task before insertion
-        validateTaskAttributes(task);
+        validateTaskAttributes(taskDTO);
         
+        // Map TaskDTO to entity
+        Task task = TaskMapper.toEntity(taskDTO, user_id);
+        
+        // Save task
         taskRepository.createTask(task, user_id);
 	}
 
 	@Override
-	public Task getTaskById(Long task_id, Long user_id) {
+	public TaskDTO getTaskById(Long task_id, Long user_id) {
 		// Validates task ID before querying
     	validateTaskId(task_id, user_id);
     	
-    	return taskRepository.findTaskById(task_id, user_id);
+        Task task = taskRepository.findTaskById(task_id, user_id);
+        
+        return TaskMapper.toDTO(task);
 	}
 
 	@Override
@@ -37,28 +46,38 @@ public class TaskServiceImpl implements TaskService {
 	}
 	
 	@Override
-	public void updateTask(Long task_id, Long user_id, Task task) {
+	public void updateTask(Long task_id, Long user_id, TaskDTO taskDTO) {
 		// Validates task ID before querying
         validateTaskId(task_id, user_id);
     	
-    	// Validates task before update
-        validateTaskAttributes(task);
+    	// Validates taskDTO before update
+        validateTaskAttributes(taskDTO);
+        
+        // Map taskDTO to entity
+        Task task = TaskMapper.toEntity(taskDTO, user_id);
         
         taskRepository.updateTask(task_id, user_id, task);
-
 	}
 
 	@Override
-	public Task deleteTaskById(Long task_id, Long user_id) {
+	public TaskDTO deleteTaskById(Long task_id, Long user_id) {
 		// Validates task ID before querying
     	validateTaskId(task_id, user_id);
     	
-    	return taskRepository.deleteTaskById(task_id, user_id);
+    	Task task = taskRepository.deleteTaskById(task_id, user_id);
+    	
+    	return TaskMapper.toDTO(task);
 	}
 
 	@Override
-	public List<Task> getAllTasks(Long user_id) {
-		return taskRepository.getAll(user_id); 
+	public List<TaskDTO> getAllTasks(Long user_id) {
+		List<Task> tasks = taskRepository.getAll(user_id);
+		List<TaskDTO> tasksDTO = new LinkedList<>();
+		
+		for (Task task : tasks) {
+			tasksDTO.add(TaskMapper.toDTO(task));
+		}
+		return tasksDTO;
 	}
 	
 	 /**
@@ -70,8 +89,8 @@ public class TaskServiceImpl implements TaskService {
      * @param task The task object to be validated
      * @throws IllegalArgumentException if the task attributes are invalid
      */
-    private void validateTaskAttributes(Task task) {
-        if (!isValidTask(task)) {
+    private void validateTaskAttributes(TaskDTO taskDTO) {
+        if (!isValidTask(taskDTO)) {
             throw new InvalidTaskDataException("Invalid task attributes. Title and description cannot be empty or null.");
         }
     }
@@ -99,10 +118,10 @@ public class TaskServiceImpl implements TaskService {
      * @param task The task to validate
      * @return boolean indicating if the task is valid
      */
-    private boolean isValidTask(Task task) {
+    private boolean isValidTask(TaskDTO taskDTO) {
         // Checks if title and description are non-null and non-empty
-        boolean isValidTitle = hasValidTitle(task.getTitle());
-        boolean isValidDescription = hasValidDescription(task.getDescription());
+        boolean isValidTitle = hasValidTitle(taskDTO.getTitle());
+        boolean isValidDescription = hasValidDescription(taskDTO.getDescription());
 
         return isValidTitle && isValidDescription;
     }

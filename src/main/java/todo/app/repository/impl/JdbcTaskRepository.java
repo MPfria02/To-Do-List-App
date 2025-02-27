@@ -133,6 +133,5 @@ public class JdbcTaskRepository implements TaskRepository {
 	   Task task = new Task(rs.getString("title"), rs.getString("description"));
 	   task.setEntityId(taskId);
 	   return task;
-//	   return new Task(rs.getString("title"), rs.getString("description"));
    }
 }

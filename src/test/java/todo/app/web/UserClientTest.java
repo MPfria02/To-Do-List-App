@@ -18,6 +18,7 @@ import org.springframework.test.context.TestPropertySource;
 import todo.app.ToDoListApplication;
 import todo.app.config.SystemTestConfig;
 import todo.app.logic.User;
+import todo.app.logic.UserDTO;
 
 @SpringBootTest(classes = {ToDoListApplication.class}, 
 webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -37,21 +38,21 @@ class UserClientTest {
 		// Arrange
 		Long userId = 1L;
 		username = "Bob"; password = "securepass";
-		User user;
+		UserDTO userDTO;
 		String usernameExpected = "Alice", emailExpected = "alice@example.com";
 		
 		// Act
-		ResponseEntity<User> responseEntity =
+		ResponseEntity<UserDTO> responseEntity =
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(USERS_URL + "{userId}", User.class, userId);
+							.getForEntity(USERS_URL + "{userId}", UserDTO.class, userId);
 		
-		user = responseEntity.getBody();
+		userDTO = responseEntity.getBody();
 		
 		// Assert
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertAll("Verify attributes from retrieved user",
-				()-> assertThat(user.getUsername()).isEqualTo(usernameExpected),
-				()-> assertThat(user.getEmail()).isEqualTo(emailExpected)
+				()-> assertThat(userDTO.getUsername()).isEqualTo(usernameExpected),
+				()-> assertThat(userDTO.getEmail()).isEqualTo(emailExpected)
 		);
 	}
 	
@@ -60,18 +61,18 @@ class UserClientTest {
 		// Arrange
 		username = "Bob"; password = "securepass";
 		int totalUsers = 3;
-		User[] users;
+		UserDTO[] usersDTO;
 		
 		// Act
-		ResponseEntity<User[]> responseEntity = 
+		ResponseEntity<UserDTO[]> responseEntity = 
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(USERS_URL, User[].class);
+							.getForEntity(USERS_URL, UserDTO[].class);
 		
-		users = responseEntity.getBody();
+		usersDTO = responseEntity.getBody();
 		
 		// Assert
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(users.length == totalUsers);
+		assertThat(usersDTO.length == totalUsers);
 	}
 	
 	@Test
@@ -104,16 +105,16 @@ class UserClientTest {
 		// Arrange
 		Long userId = 4L;
 		User newUser = new User("Lein", "lein@gmail.com", "passw0rd");
-		User userRetrieved;
+		UserDTO userRetrieved;
 		username = "Bob"; password = "securepass";
 		
 		// Act
 		ResponseEntity<Void> responseEntityHttpMehtodPOST =
 				restTemplate.postForEntity(REGISTRATION_URL, newUser, Void.class);
 		
-		ResponseEntity<User> responseEntityHttpMethodGET =
+		ResponseEntity<UserDTO> responseEntityHttpMethodGET =
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(USERS_URL + "{userId}", User.class, userId);
+							.getForEntity(USERS_URL + "{userId}", UserDTO.class, userId);
 		
 		userRetrieved = responseEntityHttpMethodGET.getBody();
 		

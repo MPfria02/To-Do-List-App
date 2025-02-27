@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import todo.app.logic.Task;
+import todo.app.logic.TaskDTO;
 import todo.app.service.TaskService;
 import todo.app.service.UserService;
 
@@ -30,38 +30,40 @@ public class TaskController {
 	}
 	
 	@GetMapping("/todo/app/tasks/{taskId}")
-	public ResponseEntity<Task> getTaskById(@PathVariable Long taskId, Authentication authentication) {
+	public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long taskId, Authentication authentication) {
 		Long userId = getUserId(authentication);
-		Task task = taskService.getTaskById(taskId, userId);
+		TaskDTO taskDTO = taskService.getTaskById(taskId, userId);
 
-		return ResponseEntity.ok(task);
+		return ResponseEntity.ok(taskDTO);
 	}
 	
 	@GetMapping("/todo/app/tasks/")
-	public ResponseEntity<List<Task>> getAllTasks(Authentication authentication) {
+	public ResponseEntity<List<TaskDTO>> getAllTasks(Authentication authentication) {
 		Long userId = getUserId(authentication);
-		List<Task> tasks = taskService.getAllTasks(userId);
+		List<TaskDTO> tasksDTO = taskService.getAllTasks(userId);
 		
-		return ResponseEntity.ok(tasks);
+		return ResponseEntity.ok(tasksDTO);
 	}
 	
 	@PostMapping("/todo/app/tasks/")
-	public ResponseEntity<Void> createTask(@RequestBody Task task, Authentication authentication) {
-		// Save new task
+	public ResponseEntity<Void> createTask(@RequestBody TaskDTO taskDTO, Authentication authentication) {
+		// Get user ID
 		Long userId = getUserId(authentication);
-		taskService.saveTask(task, userId);
 		
 		// Create location header
-		URI taskLocationUri = createLocationHeaderForNewTask(task, userId); 
+		URI taskLocationUri = createLocationHeaderForNewTask(userId); 
+		
+		// Save new task
+		taskService.saveTask(taskDTO, userId);
 		
 		// Return ResponseEntity with Location header and 201 status
 		return ResponseEntity.created(taskLocationUri).build();
 	}
 	
 	@PutMapping("/todo/app/tasks/{taskId}")
-	public ResponseEntity<Void> updateTaskById(@RequestBody Task task, @PathVariable Long taskId, Authentication authentication) {
+	public ResponseEntity<Void> updateTaskById(@RequestBody TaskDTO taskDTO, @PathVariable Long taskId, Authentication authentication) {
 		Long userId = getUserId(authentication);
-		taskService.updateTask(taskId, userId, task);
+		taskService.updateTask(taskId, userId, taskDTO);
 		return ResponseEntity.noContent().build();
 	}
 	
@@ -73,7 +75,7 @@ public class TaskController {
 	}
 	
 
-	private URI createLocationHeaderForNewTask(Task task, Long userId) {
+	private URI createLocationHeaderForNewTask(Long userId) {
 		Long newTaskId = taskService.getNextTaskIdForUser(userId);
 		
 		URI locationUri = ServletUriComponentsBuilder

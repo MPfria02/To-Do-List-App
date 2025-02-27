@@ -91,12 +91,12 @@ class UserServiceTest {
         
         // Act & Assert: Verify exception is thrown for invalid ID
         assertThrows(UserNotFoundException.class, ()->{
-            user = userService.getUserById(user_id);
+               userService.getUserById(user_id);
             }, 
             EXCEPTION_MESSAGE_EXPECTED);
         
         assertThrows(UserNotFoundException.class, ()->{
-            user = userService.deleteUserById(user_id);
+                userService.deleteUserById(user_id);
             }, 
             EXCEPTION_MESSAGE_EXPECTED);
     }
@@ -107,7 +107,7 @@ class UserServiceTest {
     	EXCEPTION_MESSAGE_EXPECTED = "Invalid username";
     	
     	assertThrows(InvalidUserDataException.class, ()-> {
-    		Long id = userService.getUserIdByUsername(username);
+    		    userService.getUserIdByUsername(username);
     		}, 
     		EXCEPTION_MESSAGE_EXPECTED);
     }

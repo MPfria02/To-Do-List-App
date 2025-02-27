@@ -1,5 +1,6 @@
 package todo.app.service.impl;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import todo.app.exception.InvalidUserDataException;
 import todo.app.exception.UserNotFoundException;
 import todo.app.logic.User;
+import todo.app.logic.UserDTO;
+import todo.app.mapper.UserMapper;
 import todo.app.repository.UserRepository;
 import todo.app.service.UserService;
 
@@ -33,11 +36,12 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User getUserById(Long id) {
+	public UserDTO getUserById(Long id) {
 		if (!userRepository.existById(id)) {
 			throw new UserNotFoundException("Invalid user ID.");
 		}
-		return userRepository.findUserById(id);
+		User user = userRepository.findUserById(id);
+		return UserMapper.toDTO(user);
 	}
 	
 	@Override
@@ -49,16 +53,23 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User deleteUserById(Long id) {
+	public UserDTO deleteUserById(Long id) {
 		if (!userRepository.existById(id)) {
 			throw new UserNotFoundException("Invalid user ID.");
 		}
-		return userRepository.deleteUserById(id);
+		User user = userRepository.deleteUserById(id);
+		return UserMapper.toDTO(user);
 	}
 
 	@Override
-	public List<User> getAllUsers() {
-		return userRepository.getAll();
+	public List<UserDTO> getAllUsers() {
+		List<User> users = userRepository.getAll();
+		List<UserDTO> usersDTO = new LinkedList<>();
+		
+		for (User user : users) {
+			usersDTO.add(UserMapper.toDTO(user));
+		}
+		return usersDTO;
 	}
 	
 	  /**

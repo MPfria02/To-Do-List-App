@@ -3,6 +3,7 @@ package todo.app.service;
 import java.util.List;
 
 import todo.app.logic.User;
+import todo.app.logic.UserDTO;
 
 /**
  * Provides core operations for managing user entities in the system.
@@ -28,7 +29,7 @@ public interface UserService {
      * @return the found user entity
      * @throws IllegalArgumentException if no user exists with given ID
      */
-    User getUserById(Long id);
+    UserDTO getUserById(Long id);
     
     /**
      * Finds a user id by their username
@@ -45,12 +46,12 @@ public interface UserService {
      * @return the deleted user entity
      * @throws IllegalArgumentException if no user found with given ID
      */
-    User deleteUserById(Long id);
+    UserDTO deleteUserById(Long id);
     
     /**
      * Retrieves all users currently in the system.
      *
      * @return a List containing all users, empty list if no users exists
      */
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 }

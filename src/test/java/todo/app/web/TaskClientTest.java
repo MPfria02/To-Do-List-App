@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import todo.app.ToDoListApplication;
 import todo.app.config.SystemTestConfig;
 import todo.app.logic.Task;
+import todo.app.logic.TaskDTO;
 
 @SpringBootTest(classes = {ToDoListApplication.class}, 
 				webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -56,16 +57,16 @@ class TaskClientTest {
 		username = "Alice"; password = "password123";
 		String titleExpected = "Buy groceries", descriptionExpected = "Milk, eggs, bread";
 		
-		ResponseEntity<Task>  responseEntity =
+		ResponseEntity<TaskDTO>  responseEntity =
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(TASKS_URL + "{taskId}", Task.class, taskId);
+							.getForEntity(TASKS_URL + "{taskId}", TaskDTO.class, taskId);
 		
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		Task task = responseEntity.getBody();
-		assertNotNull(task);
+		TaskDTO taskDTO = responseEntity.getBody();
+		assertNotNull(taskDTO);
 		assertAll("Verify task attributes",
-			() -> assertThat(task.getTitle()).isEqualTo(titleExpected),
-	        () -> assertThat(task.getDescription()).isEqualTo(descriptionExpected)
+			() -> assertThat(taskDTO.getTitle()).isEqualTo(titleExpected),
+	        () -> assertThat(taskDTO.getDescription()).isEqualTo(descriptionExpected)
 	        );
 	}
 	
@@ -76,29 +77,29 @@ class TaskClientTest {
 		username = "Alice"; password = "password123";
 		String titleExpected = "Book tickets", descriptionExpected = "Vacation tickets to Hawaii";
 		
-		ResponseEntity<Task[]>  responseEntity =
+		ResponseEntity<TaskDTO[]>  responseEntity =
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(TASKS_URL, Task[].class);
+							.getForEntity(TASKS_URL, TaskDTO[].class);
 		
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		Task[] tasks = responseEntity.getBody();
-		assertNotNull(tasks);
-		assertThat(tasks.length == totalTasks).withFailMessage("Expected 2 tasks, but found " + tasks.length).isTrue();
-		assertThat(tasks[1].getTitle()).isEqualTo(titleExpected);
-		assertThat(tasks[1].getDescription()).isEqualTo(descriptionExpected);
+		TaskDTO[] tasksDTO = responseEntity.getBody();
+		assertNotNull(tasksDTO);
+		assertThat(tasksDTO.length == totalTasks).withFailMessage("Expected 2 tasks, but found " + tasksDTO.length).isTrue();
+		assertThat(tasksDTO[1].getTitle()).isEqualTo(titleExpected);
+		assertThat(tasksDTO[1].getDescription()).isEqualTo(descriptionExpected);
 	}
 	
 	@Test
 	void shouldCreateTaskWhenAttributesAreValidAndUserIsAuthenticated() {
 		// Arrange
-		Task task = new Task("New Task", "Testing new tasks creation");
+		TaskDTO taskDTO = new TaskDTO("New Task", "Testing new tasks creation");
 		int newTaskId = 2;
 		username = "Charlie"; password = "mypassword";
 		
 		// Act
 		ResponseEntity<Void> responseEntity =
 				restTemplate.withBasicAuth(username, password)
-							.postForEntity(TASKS_URL, task, Void.class);
+							.postForEntity(TASKS_URL, taskDTO, Void.class);
 		
 		// Assert
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -111,21 +112,21 @@ class TaskClientTest {
 		Long taskId = 1L;
 		username = "Alice"; password = "password123";
 		String newTitle = "Buy book", newDescription = "Atomic Habits by James Clear";
-		Task task = new Task(newTitle, newDescription);
+		TaskDTO taskDTO = new TaskDTO(newTitle, newDescription);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		HttpEntity<Task> requestEntity = new HttpEntity<>(task, headers);
+		HttpEntity<TaskDTO> requestEntity = new HttpEntity<>(taskDTO, headers);
 		
 		// Act
 		ResponseEntity<Void> responseEntityHttpMethodPUT =
 				restTemplate.withBasicAuth(username, password)
 							.exchange(TASKS_URL + "{taskId}", HttpMethod.PUT, requestEntity, Void.class, taskId);
 		
-		ResponseEntity<Task> responseEntityHttpMethodGET=
+		ResponseEntity<TaskDTO> responseEntityHttpMethodGET=
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(TASKS_URL + "{taskId}", Task.class, taskId);
+							.getForEntity(TASKS_URL + "{taskId}", TaskDTO.class, taskId);
 		
-		Task modifiedTask = responseEntityHttpMethodGET.getBody();
+		TaskDTO modifiedTask = responseEntityHttpMethodGET.getBody();
 		
 		// Assert
 		assertThat(responseEntityHttpMethodPUT.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
@@ -147,16 +148,16 @@ class TaskClientTest {
 				restTemplate.withBasicAuth(username, password)
 							.exchange(TASKS_URL + "{taskId}", HttpMethod.DELETE, HttpEntity.EMPTY, Void.class, taskId);
 		
-		ResponseEntity<Task[]>  responseEntityHttpMethodGET =
+		ResponseEntity<TaskDTO[]>  responseEntityHttpMethodGET =
 				restTemplate.withBasicAuth(username, password)
-							.getForEntity(TASKS_URL, Task[].class);
+							.getForEntity(TASKS_URL, TaskDTO[].class);
 		
 		
-		Task[] tasks = responseEntityHttpMethodGET.getBody();
+		TaskDTO[] tasksDTO = responseEntityHttpMethodGET.getBody();
 	
 		// Assert
 		assertThat(responseEntityHttpMethodDELETE.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-		assertThat(tasks.length == totalTaskExpected);
+		assertThat(tasksDTO.length == totalTaskExpected);
 	}
 	
 	@Test

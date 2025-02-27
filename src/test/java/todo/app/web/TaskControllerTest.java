@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import todo.app.config.SystemTestConfig;
 import todo.app.exception.InvalidTaskDataException;
 import todo.app.exception.TaskNotFoundException;
-import todo.app.logic.Task;
+import todo.app.logic.TaskDTO;
 import todo.app.security.SecurityConfig;
 import todo.app.service.TaskService;
 import todo.app.service.UserService;
@@ -57,9 +57,9 @@ class TaskControllerTest {
 		// Arrange
 		Long userId = 1L, taskId = 1L; 
 		String title = "MockTitle", description = "MockDescription";
-		Task task = new Task(title, description);
+		TaskDTO taskDTO = new TaskDTO(title, description);
 		
-		given(taskService.getTaskById(taskId, userId)).willReturn(task);
+		given(taskService.getTaskById(taskId, userId)).willReturn(taskDTO);
 		given(userService.getUserIdByUsername(any(String.class))).willReturn(userId);
 		
 		// Act & Assert
@@ -80,7 +80,7 @@ class TaskControllerTest {
 		Long userId = 1L;
 		String exceptionExpectedMessage = "Invalid task attributes. Title and description cannot be empty or null.";
 		given(userService.getUserIdByUsername(any(String.class))).willReturn(userId);
-		willThrow(new InvalidTaskDataException(exceptionExpectedMessage)).given(taskService).saveTask(any(Task.class), eq(userId));
+		willThrow(new InvalidTaskDataException(exceptionExpectedMessage)).given(taskService).saveTask(any(TaskDTO.class), eq(userId));
 		
 		// Act & Assert
 		mockMvc.perform(post(TASKS_URL)
@@ -95,7 +95,7 @@ class TaskControllerTest {
 			});
 		
 		// Verify
-		verify(taskService).saveTask(any(Task.class), eq(userId));
+		verify(taskService).saveTask(any(TaskDTO.class), eq(userId));
 	}
 
 	@Test
@@ -126,9 +126,9 @@ class TaskControllerTest {
 	void shouldReturnAllTasksWhenUserIsAuthenticated() throws Exception {
 		// Arrange 
 		Long userId = 1L;
-		List<Task> tasks = Arrays.asList(new Task("MockTitle", "MockDescription"));
+		List<TaskDTO> tasksDTO = Arrays.asList(new TaskDTO("MockTitle", "MockDescription"));
 		given(userService.getUserIdByUsername(any(String.class))).willReturn(userId);
-		given(taskService.getAllTasks(userId)).willReturn(tasks);
+		given(taskService.getAllTasks(userId)).willReturn(tasksDTO);
 		
 		// Act & Assert
 		mockMvc.perform(get(TASKS_URL))
@@ -156,7 +156,7 @@ class TaskControllerTest {
 		// Arrange
 		Long userId = 1L, taskId = 1L;
 		given(userService.getUserIdByUsername(any(String.class))).willReturn(userId);
-		willDoNothing().given(taskService).updateTask(eq(taskId), eq(userId), any(Task.class));
+		willDoNothing().given(taskService).updateTask(eq(taskId), eq(userId), any(TaskDTO.class));
 		
 		// Act & Assert
 		mockMvc.perform(put(TASKS_URL + taskId)
@@ -165,7 +165,7 @@ class TaskControllerTest {
 		.andExpect(status().isNoContent());
 		
 		// Verify
-		verify(taskService).updateTask(eq(taskId), eq(userId), any(Task.class));
+		verify(taskService).updateTask(eq(taskId), eq(userId), any(TaskDTO.class));
 	}
 	
 	@Test
@@ -174,7 +174,7 @@ class TaskControllerTest {
 		// Arrange
 		Long userId = 1L, newTaskId = 3L;
 		given(userService.getUserIdByUsername(any(String.class))).willReturn(userId);
-		willDoNothing().given(taskService).saveTask(any(Task.class), eq(userId));
+		willDoNothing().given(taskService).saveTask(any(TaskDTO.class), eq(userId));
 		given(taskService.getNextTaskIdForUser(userId)).willReturn(newTaskId);
 		
 		// Act & Assert
@@ -185,7 +185,7 @@ class TaskControllerTest {
 			.andExpect(header().string("Location", "http://localhost/todo/app/tasks/" + newTaskId));
 		
 		// Verify
-		verify(taskService).saveTask(any(Task.class), eq(userId));
+		verify(taskService).saveTask(any(TaskDTO.class), eq(userId));
 	}
 	
 	@Test
@@ -194,7 +194,7 @@ class TaskControllerTest {
 		// Arrange
 		Long userId = 1L, taskId = 1L;
 		given(userService.getUserIdByUsername(any(String.class))).willReturn(userId);
-		given(taskService.deleteTaskById(taskId, userId)).willReturn(new Task("DELETE", "deleted task"));
+		given(taskService.deleteTaskById(taskId, userId)).willReturn(new TaskDTO("DELETE", "deleted task"));
 		
 		// Act & Assert
 		mockMvc.perform(delete(TASKS_URL + taskId))
