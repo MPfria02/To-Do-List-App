@@ -20,17 +20,6 @@ public interface UserRepository {
      * @throws DatabaseException if there's an error during user creation
      */
     void createUser(User user);
-
-    /**
-     * Finds a user by their email and password credentials.
-     * 
-     * @param email The user's email address
-     * @param password The user's password
-     * @return The User object if credentials are valid
-     * @throws InvalidCredentialsException if email or password are incorrect
-     * @throws UserNotFoundException if no user matches the credentials
-     */
-    User findUserByEmailAndPassword(String email, String password);
     
     /**
      * Finds a user by their email and password credentials.
@@ -40,7 +29,27 @@ public interface UserRepository {
      * @throws InvalidCredentialsException if id is incorrect.
      * @throws UserNotFoundException if no user matches the credentials.
      */
+    
+    void updateUser(User user);
+    
     User findUserById(Long id);
+    
+    /**
+     * Finds a user by their username.
+     * 
+     * @param username The username of the user.
+     * @return The User object.
+     */
+    User findUserByUsername(String username);
+    
+    /**
+     * Finds a user id by their username.
+     * 
+     * @param username The username of the user.
+     * @return The User ID if name is valid
+     * 
+     */
+    Long findUserIdByUsername(String username);
     
 
     /**
@@ -59,5 +68,17 @@ public interface UserRepository {
      * @return A list of all User entities
      * @throws DatabaseException if there's an error retrieving users
      */
-    List<User> getAllUsers();
+    List<User> getAll();
+
+	/**
+	 * Validates a user ID against the total number of users in the database.
+	 * 
+	 * Checks if the ID is:
+	 * - Positive
+	 * - Not greater than the total number of users
+	 * 
+	 * @param id The user ID to validate
+	 * @return true if the ID is valid, false otherwise
+	 */
+	boolean existById(Long id);
 }

@@ -1,5 +1,7 @@
 package todo.app.repository.impl;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import javax.sql.DataSource;
 
@@ -14,8 +16,6 @@ import todo.app.repository.UserRepository;
  * This class provides database operations for user-related functionality, including
  * creating, finding, deleting, and retrieving users from a database using Spring's JdbcTemplate.
  * 
- * The implementation performs validation on user data before executing database operations
- * to ensure data integrity and prevent invalid insertions or queries.
  * 
  * @author Marcel Pulido
  * @version 1.0
@@ -36,7 +36,9 @@ public class JdbcUserRepository implements UserRepository {
      * Note: In a production environment, consider using prepared statements 
      * or a more robust SQL management approach.
      */
-    private String sqlStatement;
+    private String SQL_QUERY;
+    
+    private final String ROLE_USER = "ROLE_USER";
 
     /**
      * Constructs a new JdbcUserRepository with the specified data source.
@@ -52,159 +54,80 @@ public class JdbcUserRepository implements UserRepository {
     }
 	
 	@Override
-	public void createUser(User user) {
-		
-		if (!isValidUser(user)) {
-			throw new IllegalArgumentException("User attributes cannot be either null or empty.");
-		}
-		
-		sqlStatement = "INSERT INTO t_users (full_name, email, password) VALUES (?,?,?)";
-		jdbcTemplate.update(sqlStatement, user.getName(), user.getEmail(), user.getPassword());		
+	public void createUser(User user) {	
+		SQL_QUERY = "INSERT INTO t_users (username, email, password) VALUES (?,?,?)";
+		jdbcTemplate.update(SQL_QUERY, user.getUsername(), user.getEmail(), user.getPassword());
+		createUserAuthorities(user);
 	}
 	
 	@Override
-	public User findUserByEmailAndPassword(String email, String password) {
-		
-		validateUserEmailAndPassword(email, password);
-		sqlStatement = "SELECT * FROM t_users WHERE email = ? AND password = ?";
-		return jdbcTemplate.queryForObject(sqlStatement, 
-				(rs, rowNum) -> new User(rs.getString("full_name"), 
-							             rs.getString("email"), 
-							             rs.getString("password")),
-				email, password);
+	public void updateUser(User user) {
+		SQL_QUERY = "UPDATE t_users SET username = ?, password = ? WHERE t_users.email = ?";
+		jdbcTemplate.update(SQL_QUERY, user.getUsername(), user.getPassword(), user.getEmail());
 	}
-
+	
 	@Override
 	public User findUserById(Long id) {
-
-		validateUserId(id);
-		sqlStatement = "SELECT * FROM t_users WHERE id = ?";
-		return jdbcTemplate.queryForObject(sqlStatement, 
-				(rs, rowNum) -> new User(rs.getString("full_name"), 
-        				 				 rs.getString("email"), 
-        				 				 rs.getString("password")),
+		SQL_QUERY = "SELECT * FROM t_users WHERE id = ?";
+		return jdbcTemplate.queryForObject(SQL_QUERY, 
+				(rs, rowNum) -> mapToUser(rs, rowNum),
 				id);
 	}
 	
 	@Override
+	public User findUserByUsername(String username) {
+		SQL_QUERY = "SELECT * FROM t_users WHERE t_users.username = ?";
+		return jdbcTemplate.queryForObject(SQL_QUERY, (rs, rowNum) -> mapToUser(rs, rowNum),
+				username);
+	}
+	
+	@Override
+	public Long findUserIdByUsername(String name) {
+		SQL_QUERY = "SELECT id FROM t_users WHERE t_users.username = ?";
+		return jdbcTemplate.queryForObject(SQL_QUERY, Long.class, name);
+	}
+	
+	@Override
 	public User deleteUserById(Long id) {
-		validateUserId(id);
 		User user = findUserById(id);		
-		sqlStatement = "DELETE FROM t_users WHERE id = ?";
-		jdbcTemplate.update(sqlStatement, id);
+		SQL_QUERY = "DELETE FROM t_users WHERE id = ?";
+		jdbcTemplate.update(SQL_QUERY, id);
 		return user;
 	}
 
 	@Override
-	public List<User> getAllUsers() {
-		
-		sqlStatement = "SELECT * FROM t_users";
-		return jdbcTemplate.query(sqlStatement, 
-				(rs, rowNum) -> new User(rs.getString("full_name"), 
-        				 				 rs.getString("email"), 
-        				 				 rs.getString("password")));
+	public List<User> getAll() {
+		SQL_QUERY = "SELECT * FROM t_users";
+		return jdbcTemplate.query(SQL_QUERY, 
+				(rs, rowNum) -> mapToUser(rs, rowNum));
+	}
+	
+	@Override
+    public boolean existById(Long id) {
+		SQL_QUERY = "SELECT COUNT(id) FROM t_users WHERE t_users.id = ?";
+	    int userIdExists = jdbcTemplate.queryForObject(SQL_QUERY, Integer.class, id);
+	    return userIdExists != 0;
 	}
 	
     /**
-     * Validates email and password combination.
+     * Maps a database result set row to a User object.
+     * This method is used as a row mapper for database queries.
      * 
-     * Checks both email and password for validity using separate validation methods.
-     * 
-     * @param email The email to validate
-     * @param password The password to validate
-     * @return true if both email and password are valid
-     * @throws IllegalArgumentException if either email or password is invalid
+     * @param rs the result set containing user data
+     * @param rowNumber the current row number
+     * @return User object populated with database data
+     * @throws SQLException if database access error occurs
      */
-    private boolean validateUserEmailAndPassword(String email, String password) {
-        boolean isValidEmail = hasValidEmail(email);
-        boolean isValidPassword = hasValidPassword(password);
-
-        if (!isValidEmail || !isValidPassword) {
-            throw new IllegalArgumentException("Email or/and password are incorrect.");
-        }
-        return true;
+    private User mapToUser(ResultSet rs, int rowNumber) throws SQLException {
+    	Long userId = rs.getLong("id");
+        User user =  new User(rs.getString("username"), rs.getString("email"), rs.getString("password"));
+        user.setEntityId(userId);
+        return user;
     }
-
-    /**
-     * Validates a user ID to ensure it is within the valid range.
-     * 
-     * Checks if the ID is positive and does not exceed the total number of users.
-     * 
-     * @param id The user ID to validate
-     * @throws IllegalArgumentException if the ID is invalid
-     */
-    private void validateUserId(Long id) {
-        if (!isValidUserId(id)) {
-            throw new IllegalArgumentException("Invalid user ID.");
-        }
-    }
-
-    /**
-     * Performs comprehensive validation of a user object.
-     * 
-     * Checks:
-     * - User name is valid
-     * - Email is valid
-     * - Password is valid
-     * 
-     * @param user The user object to validate
-     * @return {@code true} if all user attributes are valid, 
-     * 		   {@code false} otherwise
-     */
-    private boolean isValidUser(User user) {
-        boolean isValidName = hasValidName(user.getName());
-        boolean isValidUserEmailAndPassword = validateUserEmailAndPassword(
-            user.getEmail(), 
-            user.getPassword()
-        );
-
-        return (isValidName && isValidUserEmailAndPassword);
-    }
-
-    /**
-     * Checks if a name is valid (not null and not empty).
-     * 
-     * @param name The name to validate
-     * @return true if the name is valid, false otherwise
-     */
-    private boolean hasValidName(String name) {
-        return (name != null && !name.isEmpty());
-    }
-
-    /**
-     * Checks if a password is valid (not null and not empty).
-     * 
-     * @param password The password to validate
-     * @return true if the password is valid, false otherwise
-     */
-    private boolean hasValidPassword(String password) {
-        return (password != null && !password.isEmpty());
-    }
-
-    /**
-     * Checks if an email is valid (not null and not empty).
-     * 
-     * @param email The email to validate
-     * @return {@code true} if the email is valid, {@code false} otherwise
-     */
-    private boolean hasValidEmail(String email) {
-        return (email != null && !email.isEmpty());
-    }
-
-    /**
-     * Validates a user ID against the total number of users in the database.
-     * 
-     * Checks if the ID is:
-     * - Positive
-     * - Not greater than the total number of users
-     * 
-     * @param id The user ID to validate
-     * @return true if the ID is valid, false otherwise
-     */
-    private boolean isValidUserId(Long id) {
-    	 sqlStatement = "SELECT COUNT(id) FROM t_users WHERE t_users.id = ?";
-        int userIdExists = jdbcTemplate.queryForObject(sqlStatement, Integer.class, id);
-         
-        return userIdExists != 0;
-    }
+    
+    private void createUserAuthorities(User user) {
+		Long user_id = findUserIdByUsername(user.getUsername());	
+		SQL_QUERY = "INSERT INTO t_authorities (username, authority, user_id) VALUES (?,?,?)";
+		jdbcTemplate.update(SQL_QUERY, user.getUsername(), ROLE_USER, user_id);	
+	}
 }

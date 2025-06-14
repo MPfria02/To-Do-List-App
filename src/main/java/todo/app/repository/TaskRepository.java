@@ -19,7 +19,7 @@ public interface TaskRepository {
      * @param task The task to create.
      * @throws InvalidTaskAttributesException if the task attributes are not valid.
      */
-    void createTask(Task task);
+    void createTask(Task task, Long user_id);
 
     /**
      * Finds a task by its unique identifier.
@@ -30,6 +30,8 @@ public interface TaskRepository {
      * @throws IllegalArgumentException if the given task_id is not valid
      */
     Task findTaskById(Long task_id, Long userId);
+    
+    Long getNextTaskIdForUser(Long user_id);
 
     /**
      * Updates an existing task in the data source.
@@ -38,7 +40,7 @@ public interface TaskRepository {
      * @throws TaskNotFoundException if no task exists with the given ID.
      * @throws DatabaseException if there's an error during task update
      */
-    void updateTask(Long id, Task task);
+    void updateTask(Long id,Long user_id, Task task);
 
     /**
      * Deletes a task by its unique identifier.
@@ -55,6 +57,15 @@ public interface TaskRepository {
      * @return A list of all tasks entities.
      * @throws DatabaseException if there's an error retrieving tasks.
      */
-    List<Task> getAllTasks(Long user_id);
+    List<Task> getAll(Long user_id);
+    
+    /**
+     * Validates a task ID against existing tasks for a user.
+     * 
+     * @param task_id The task ID to validate
+     * @param user_id The user ID to check against
+     * @return boolean indicating if the task ID is valid
+     */
+    boolean existById(Long task_id, Long user_id);
     
 }
